@@ -1,0 +1,20 @@
+html
+  head
+    title Transempregos
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    base(href="/")
+    link(rel='stylesheet', href='dist/public/stylesheet.css')
+    script(type='text/javascript').
+      var _jobs = !{JSON.stringify(jobs)};
+    <!-- Polyfill(s) for older browsers -->
+    script(src="node_modules/core-js/client/shim.min.js")
+    script(src="node_modules/zone.js/dist/zone.js")
+    script(src="node_modules/reflect-metadata/Reflect.js")
+    script(src="node_modules/systemjs/dist/system.src.js")
+    script(src="dist/public/systemjs.config.js")
+    script(type='text/javascript').
+      System.import('app').catch(function(err){ console.error(err); });
+  body
+    trans-app Carregando...
