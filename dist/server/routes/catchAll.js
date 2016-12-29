@@ -9,10 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const Router = require("koa-router");
 const job_1 = require("../models/job");
+const upmonitor_1 = require("../upmonitor");
 const router = new Router();
 router.get('/', (ctx) => __awaiter(this, void 0, void 0, function* () {
-    const jobs = yield job_1.Job.find();
-    yield ctx.render('index', { jobs: jobs });
+    if (upmonitor_1.upMonitor.isDown) {
+        debug('Server is down because of ${upMonitor.reason}, not trying to go the database.');
+        yield ctx.render('index', { jobs: null, isDown: true });
+        return;
+    }
+    else {
+        const jobs = yield job_1.Job.find();
+        yield ctx.render('index', { jobs: jobs });
+    }
 }));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;
