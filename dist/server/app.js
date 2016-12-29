@@ -19,13 +19,28 @@ const path = require("path");
 const mongoose = require("mongoose");
 const router_1 = require("./routes/router");
 const debug = require('debug')('trans');
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/transempregos').catch(err => console.error(`Could not connect to Mongo.\n${err}`));
 const app = new Koa();
 const nodeEnv = process.env.NODE_ENV || 'development';
 debug(`Environment is '${nodeEnv}'`);
 const isDevEnv = nodeEnv === 'development';
 const isTestEnv = nodeEnv === 'test';
+const isProdEnv = nodeEnv === 'production';
+mongoose.Promise = global.Promise;
+const connectionString = process.env.MONGO_URI;
+let connectResult;
+if (connectionString) {
+    connectResult = mongoose.connect(connectionString);
+}
+else if (isTestEnv) {
+    connectResult = mongoose.connect('mongodb://localhost/transempregos-test');
+}
+else if (isProdEnv) {
+    throw new Error('Production has to have MONGO_URI set.');
+}
+else {
+    connectResult = mongoose.connect('mongodb://localhost/transempregos');
+}
+connectResult.catch(err => debug(`Could not connect to Mongo.\n${err}`));
 if (!isTestEnv)
     app.use(logger());
 const publicPath = path.resolve(__dirname, '../public');
