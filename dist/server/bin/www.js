@@ -2,8 +2,6 @@
 "use strict";
 const app_1 = require("../app");
 const http = require("http");
-const Debug = require("debug");
-const debug = Debug('server');
 const port = normalizePort(process.env.PORT || '3000');
 const server = http.createServer(app_1.default.callback());
 server.listen(port);
@@ -42,6 +40,6 @@ function onListening() {
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
-    debug('Listening on ' + bind);
+    log('Listening on ' + bind);
 }
 //# sourceMappingURL=www.js.map

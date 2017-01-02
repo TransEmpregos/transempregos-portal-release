@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments)).next());
     });
 };
-const Router = require("koa-router");
+const _transRouter_1 = require("./_transRouter");
 const job_1 = require("../models/job");
-const router = new Router();
+const router = new _transRouter_1.Router();
 router.get('/', (ctx) => __awaiter(this, void 0, void 0, function* () {
     const jobs = yield job_1.Job.find();
     ctx.body = jobs;

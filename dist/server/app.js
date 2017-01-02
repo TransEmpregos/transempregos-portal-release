@@ -17,7 +17,7 @@ const Pug = require("koa-pug");
 const mongodb_1 = require("mongodb");
 const convert = require('koa-convert');
 const path = require("path");
-global.debug = require('debug')('trans');
+global.log = require('debug')('trans');
 const router_1 = require("./routes/router");
 const connectionManager_1 = require("./connectionManager");
 const config_1 = require("./config");
@@ -44,11 +44,11 @@ app.use((ctx, next) => __awaiter(this, void 0, void 0, function* () {
     }
     catch (error) {
         if (error instanceof mongodb_1.MongoError) {
-            debug('Got unhandled mongo error, checking connection.');
+            log('Got unhandled mongo error, checking connection.');
             connectionManager_1.rebuildConnectionAsync();
         }
         else {
-            debug(`Error on middleware\n${error}`);
+            log(`Error on middleware\n${error}`);
         }
         ctx.body = { message: error.message };
         ctx.status = error.status || 500;
