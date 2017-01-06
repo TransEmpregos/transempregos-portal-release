@@ -13,7 +13,7 @@ const upmonitor_1 = require("../upmonitor");
 const router = new _transRouter_1.Router();
 router.get('/', (ctx) => __awaiter(this, void 0, void 0, function* () {
     if (upmonitor_1.upMonitor.isDown) {
-        log('Server is down because of ${upMonitor.reason}, not trying to go the database.');
+        log(`Server is down because of ${upmonitor_1.upMonitor.reason}, not trying to go the database.`);
         yield ctx.render('index', { jobs: null, isDown: true });
         return;
     }
