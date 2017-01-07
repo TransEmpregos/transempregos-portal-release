@@ -44,4 +44,5 @@ describe('Status route', () => {
         ctx.body.should.eql({ status: 'ok' });
     });
 });
+
 //# sourceMappingURL=status.spec.js.map

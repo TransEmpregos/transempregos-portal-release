@@ -17,4 +17,5 @@ exports.config = {
     baseUrl: 'http://localhost:3000',
     useAllAngular2AppRoots: true
 };
+
 //# sourceMappingURL=protractor.config.js.map

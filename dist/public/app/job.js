@@ -1,8 +1,6 @@
 "use strict";
-var Job = (function () {
-    function Job() {
-    }
-    return Job;
-}());
+class Job {
+}
 exports.Job = Job;
+
 //# sourceMappingURL=job.js.map

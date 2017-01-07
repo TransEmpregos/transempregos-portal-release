@@ -22,4 +22,5 @@ for (const routeModuleName of routeModuleNames) {
 router.use(catchAll_1.default.routes(), catchAll_1.default.allowedMethods());
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;
+
 //# sourceMappingURL=router.js.map

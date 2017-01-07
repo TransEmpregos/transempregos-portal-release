@@ -3,4 +3,5 @@ describe('App', function () {
         'foo'.should.eq('foo');
     });
 });
+
 //# sourceMappingURL=app.spec.js.map

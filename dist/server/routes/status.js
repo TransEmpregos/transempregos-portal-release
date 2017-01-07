@@ -12,4 +12,5 @@ exports.statusRouter.get('/', ctx => {
         ctx.body = { status: `Server is down because '${upmonitor_1.upMonitor.reason}'` };
     }
 });
+
 //# sourceMappingURL=status.js.map

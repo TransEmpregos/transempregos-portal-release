@@ -22,4 +22,5 @@ class UpMonitor {
     }
 }
 exports.upMonitor = new UpMonitor();
+
 //# sourceMappingURL=upmonitor.js.map

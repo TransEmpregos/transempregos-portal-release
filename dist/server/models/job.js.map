@@ -1,1 +1,1 @@
-{"version":3,"file":"job.js","sourceRoot":"","sources":["../../../server/models/job.ts"],"names":[],"mappings":";AAAA,uCAAyC;AACzC,MAAM,SAAS,GAAG,IAAI,iBAAM,CAAC;IACzB,IAAI,EAAE,MAAM;CACf,CAAC,CAAC;AACU,QAAA,GAAG,GAAG,gBAAK,CAAC,KAAK,EAAE,SAAS,CAAC,CAAC"}
+{"version":3,"sources":["server/models/job.ts"],"names":[],"mappings":";AAAA,uCAAyC;AACzC,MAAM,SAAS,GAAG,IAAI,iBAAM,CAAC;IACzB,IAAI,EAAE,MAAM;CACf,CAAC,CAAC;AACU,QAAA,GAAG,GAAG,gBAAK,CAAC,KAAK,EAAE,SAAS,CAAC,CAAC","file":"job.js","sourceRoot":"../../.."}
