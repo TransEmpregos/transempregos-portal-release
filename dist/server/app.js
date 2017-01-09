@@ -18,8 +18,8 @@ connectionManager_1.startConnectionAsync();
 const app = new Koa();
 if (!config_1.Config.isTestEnv)
     app.use(logger());
-app.use(conditional());
-app.use(etag());
+app.use(convert(conditional()));
+app.use(convert(etag()));
 app.use(staticFiles_1.serveStatic());
 app.use(convert(json()));
 app.use(bodyParser());
