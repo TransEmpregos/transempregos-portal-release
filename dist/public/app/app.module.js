@@ -8,24 +8,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-const core_1 = require("@angular/core");
-const platform_browser_1 = require("@angular/platform-browser");
-const forms_1 = require("@angular/forms");
-const http_1 = require("@angular/http");
-const ng_bootstrap_1 = require("@ng-bootstrap/ng-bootstrap");
-const job_service_1 = require("./job.service");
-const app_component_1 = require("./app.component");
-const admin_component_1 = require("./admin/admin.component");
-const job_edit_component_1 = require("./admin/job-edit.component");
-const jobs_list_component_1 = require("./admin/jobs-list.component");
-const job_create_component_1 = require("./admin/job-create.component");
-const modal_yesno_component_1 = require("./modals/modal-yesno.component");
-const modal_ok_component_1 = require("./modals/modal-ok.component");
-const home_component_1 = require("./home.component");
-const app_routing_module_1 = require("./app-routing.module");
+var core_1 = require("@angular/core");
+var platform_browser_1 = require("@angular/platform-browser");
+var forms_1 = require("@angular/forms");
+var http_1 = require("@angular/http");
+var ng_bootstrap_1 = require("@ng-bootstrap/ng-bootstrap");
+var job_service_1 = require("./job.service");
+var app_component_1 = require("./app.component");
+var admin_component_1 = require("./admin/admin.component");
+var job_edit_component_1 = require("./admin/job-edit.component");
+var jobs_list_component_1 = require("./admin/jobs-list.component");
+var job_create_component_1 = require("./admin/job-create.component");
+var modal_yesno_component_1 = require("./modals/modal-yesno.component");
+var modal_ok_component_1 = require("./modals/modal-ok.component");
+var home_component_1 = require("./home.component");
+var app_routing_module_1 = require("./app-routing.module");
 require("./rxjs-extensions");
-let AppModule = class AppModule {
-};
+var AppModule = (function () {
+    function AppModule() {
+    }
+    return AppModule;
+}());
 AppModule = __decorate([
     core_1.NgModule({
         imports: [

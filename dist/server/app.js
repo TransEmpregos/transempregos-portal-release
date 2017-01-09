@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
 const Koa = require("koa");
 const json = require("koa-json");
 const bodyParser = require("koa-bodyparser");
@@ -33,9 +41,9 @@ new Pug({
         iconsDir: '/dist/public/images/icons'
     }
 });
-app.use(async (ctx, next) => {
+app.use((ctx, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        await next();
+        yield next();
     }
     catch (error) {
         if (error instanceof mongodb_1.MongoError) {
@@ -48,7 +56,7 @@ app.use(async (ctx, next) => {
         ctx.body = { message: error.message };
         ctx.status = error.status || 500;
     }
-});
+}));
 app.use(router_1.default.routes())
     .use(router_1.default.allowedMethods());
 app.on('error', (err, ctx) => {
