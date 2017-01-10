@@ -62,7 +62,7 @@ describe('AppComponent', function () {
                         .queryAll(platform_browser_1.By.directive(router_stubs_1.RouterLinkStubDirective));
                     links = linkDes.map(function (linkDe) { return linkDe.injector.get(router_stubs_1.RouterLinkStubDirective); });
                     comp = fixture.componentInstance;
-                    de = fixture.debugElement.query(platform_browser_1.By.css('a.navbar-brand'));
+                    de = fixture.debugElement.query(platform_browser_1.By.css('img.header-logo'));
                     el = de.nativeElement;
                     return [2 /*return*/];
             }
@@ -70,17 +70,17 @@ describe('AppComponent', function () {
     }); });
     it('should display original title', function () {
         fixture.detectChanges();
-        el.textContent.should.equal(comp.title);
+        el.attributes['alt'].value.should.equal("Logo " + comp.title);
     });
     it('should display a different test title', function () {
         comp.title = 'Test Title';
         fixture.detectChanges();
-        el.textContent.should.equal('Test Title');
+        el.attributes['alt'].value.should.equal('Logo Test Title');
     });
     it('can get RouterLinks from template', function () {
-        links.length.should.eq(2, 'should have 2 links');
+        links.length.should.eq(5, 'should have 5 links');
         links[0].linkParams.should.equal('/', '1st link should go Home');
-        links[1].linkParams.should.equal('/admin', '1st link should go to the Admin area');
+        links[1].linkParams.should.equal('/sobre', '1st link should go to the About area');
     });
 });
 

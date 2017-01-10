@@ -9,20 +9,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require("@angular/core");
-var HomeComponent = (function () {
-    function HomeComponent() {
+var LoginRecruiterComponent = (function () {
+    function LoginRecruiterComponent() {
     }
-    HomeComponent.prototype.ngOnInit = function () { };
-    return HomeComponent;
+    LoginRecruiterComponent.prototype.ngOnInit = function () { };
+    return LoginRecruiterComponent;
 }());
-HomeComponent = __decorate([
+LoginRecruiterComponent = __decorate([
     core_1.Component({
         moduleId: module.id,
-        selector: 'trans-home',
-        templateUrl: 'home.component.html'
+        selector: 'trans-login-recruiter',
+        templateUrl: 'login-recruiter.component.html',
+        styleUrls: ['login-user.component.css']
     }),
     __metadata("design:paramtypes", [])
-], HomeComponent);
-exports.HomeComponent = HomeComponent;
+], LoginRecruiterComponent);
+exports.LoginRecruiterComponent = LoginRecruiterComponent;
 
-//# sourceMappingURL=home.component.js.map
+//# sourceMappingURL=login-recruiter.component.js.map

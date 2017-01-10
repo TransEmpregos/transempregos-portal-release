@@ -21,7 +21,9 @@ var jobs_list_component_1 = require("./admin/jobs-list.component");
 var job_create_component_1 = require("./admin/job-create.component");
 var modal_yesno_component_1 = require("./modals/modal-yesno.component");
 var modal_ok_component_1 = require("./modals/modal-ok.component");
-var home_component_1 = require("./home.component");
+var home_component_1 = require("./home/home.component");
+var login_recruiter_component_1 = require("./login/login-recruiter.component");
+var login_candidate_component_1 = require("./login/login-candidate.component");
 var app_routing_module_1 = require("./app-routing.module");
 require("./rxjs-extensions");
 var AppModule = (function () {
@@ -42,6 +44,8 @@ AppModule = __decorate([
             app_component_1.AppComponent,
             admin_component_1.AdminComponent,
             home_component_1.HomeComponent,
+            login_recruiter_component_1.LoginRecruiterComponent,
+            login_candidate_component_1.LoginCandidateComponent,
             job_edit_component_1.JobEditComponent,
             jobs_list_component_1.JobsListComponent,
             job_create_component_1.JobCreateComponent,
