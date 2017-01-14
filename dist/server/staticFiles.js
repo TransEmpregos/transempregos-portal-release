@@ -18,12 +18,12 @@ function serveStatic() {
     const distPublicPath = path.resolve(__dirname, '../public');
     middlewares.push(mount('/dist/public', serve(distPublicPath)));
     middlewares.push(favicon(path.resolve(distPublicPath, 'images', 'icons', 'favicon.ico')));
-    if (config_1.Config.isDevEnv) {
+    if (!config_1.Config.isProdEnv) {
         const publicPath = path.resolve(__dirname, '../../public');
         middlewares.push(mount('/public', serve(publicPath)));
+        const nodeModulesPath = path.resolve(__dirname, '../../node_modules');
+        middlewares.push(mount('/node_modules', serve(nodeModulesPath)));
     }
-    const nodeModulesPath = path.resolve(__dirname, '../../node_modules');
-    middlewares.push(mount('/node_modules', serve(nodeModulesPath)));
     middlewares.push((ctx, next) => __awaiter(this, void 0, void 0, function* () {
         const url = ctx.originalUrl;
         if (url.substr(0, 6) === '/dist/'

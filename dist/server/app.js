@@ -38,7 +38,8 @@ new Pug({
     noCache: config_1.Config.isDevEnv,
     pretty: config_1.Config.isDevEnv,
     locals: {
-        iconsDir: '/dist/public/images/icons'
+        iconsDir: '/dist/public/images/icons',
+        Config: config_1.Config
     }
 });
 app.use((ctx, next) => __awaiter(this, void 0, void 0, function* () {
