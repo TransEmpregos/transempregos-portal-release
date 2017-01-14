@@ -19351,22 +19351,13 @@ var define = System.amdDefine;
 }));
 
 })();
-System.registerDynamic("dist/public/app/app.component.js", ["@angular/core"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/app.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var AppComponent = function () {
         function AppComponent() {
@@ -19374,68 +19365,50 @@ System.registerDynamic("dist/public/app/app.component.js", ["@angular/core"], tr
         }
         return AppComponent;
     }();
-    AppComponent = __decorate([core_1.Component({
+    AppComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-app',
         templateUrl: 'app.component.html',
         styleUrls: ['app.component.css'],
         providers: []
-    }), __metadata("design:paramtypes", [])], AppComponent);
+    })], AppComponent);
     exports.AppComponent = AppComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/admin/admin.component.js", ["@angular/core"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/admin.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var AdminComponent = function () {
         function AdminComponent() {}
         AdminComponent.prototype.ngOnInit = function () {};
         return AdminComponent;
     }();
-    AdminComponent = __decorate([core_1.Component({
+    AdminComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-admin',
         templateUrl: 'admin.component.html'
-    }), __metadata("design:paramtypes", [])], AdminComponent);
+    }), tslib_1.__metadata("design:paramtypes", [])], AdminComponent);
     exports.AdminComponent = AdminComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/home/home.component.js", ["@angular/core"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/home/home.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var HomeComponent = function () {
         function HomeComponent() {
@@ -19447,178 +19420,75 @@ System.registerDynamic("dist/public/app/home/home.component.js", ["@angular/core
         };
         return HomeComponent;
     }();
-    HomeComponent = __decorate([core_1.Component({
+    HomeComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-home',
         templateUrl: 'home.component.html',
         styleUrls: ['home.component.css']
-    }), __metadata("design:paramtypes", [])], HomeComponent);
+    }), tslib_1.__metadata("design:paramtypes", [])], HomeComponent);
     exports.HomeComponent = HomeComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/login/login-recruiter.component.js", ["@angular/core"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/login/login-recruiter.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var LoginRecruiterComponent = function () {
         function LoginRecruiterComponent() {}
         LoginRecruiterComponent.prototype.ngOnInit = function () {};
         return LoginRecruiterComponent;
     }();
-    LoginRecruiterComponent = __decorate([core_1.Component({
+    LoginRecruiterComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-login-recruiter',
         templateUrl: 'login-recruiter.component.html',
         styleUrls: ['login-user.component.css']
-    }), __metadata("design:paramtypes", [])], LoginRecruiterComponent);
+    }), tslib_1.__metadata("design:paramtypes", [])], LoginRecruiterComponent);
     exports.LoginRecruiterComponent = LoginRecruiterComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["@angular/core"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var LoginCandidateComponent = function () {
         function LoginCandidateComponent() {}
         LoginCandidateComponent.prototype.ngOnInit = function () {};
         return LoginCandidateComponent;
     }();
-    LoginCandidateComponent = __decorate([core_1.Component({
+    LoginCandidateComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-login-candidate',
         templateUrl: 'login-candidate.component.html',
         styleUrls: ['login-user.component.css']
-    }), __metadata("design:paramtypes", [])], LoginCandidateComponent);
+    }), tslib_1.__metadata("design:paramtypes", [])], LoginCandidateComponent);
     exports.LoginCandidateComponent = LoginCandidateComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["@angular/core", "@angular/router", "../job.service"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
-    var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) {
-                try {
-                    step(generator.next(value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function rejected(value) {
-                try {
-                    step(generator["throw"](value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function step(result) {
-                result.done ? resolve(result.value) : new P(function (resolve) {
-                    resolve(result.value);
-                }).then(fulfilled, rejected);
-            }
-            step((generator = generator.apply(thisArg, _arguments)).next());
-        });
-    };
-    var __generator = this && this.__generator || function (thisArg, body) {
-        var _ = { label: 0, sent: function () {
-                if (t[0] & 1) throw t[1];return t[1];
-            }, trys: [], ops: [] },
-            f,
-            y,
-            t;
-        return { next: verb(0), "throw": verb(1), "return": verb(2) };
-        function verb(n) {
-            return function (v) {
-                return step([n, v]);
-            };
-        }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
-                if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [0, t.value];
-                switch (op[0]) {
-                    case 0:case 1:
-                        t = op;break;
-                    case 4:
-                        _.label++;return { value: op[1], done: false };
-                    case 5:
-                        _.label++;y = op[1];op = [0];continue;
-                    case 7:
-                        op = _.ops.pop();_.trys.pop();continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                            _ = 0;continue;
-                        }
-                        if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                            _.label = op[1];break;
-                        }
-                        if (op[0] === 6 && _.label < t[1]) {
-                            _.label = t[1];t = op;break;
-                        }
-                        if (t && _.label < t[2]) {
-                            _.label = t[2];_.ops.push(op);break;
-                        }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop();continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) {
-                op = [6, e];y = 0;
-            } finally {
-                f = t = 0;
-            }
-            if (op[0] & 5) throw op[1];return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var router_1 = $__require("@angular/router");
     var job_service_1 = $__require("../job.service");
@@ -19637,8 +19507,8 @@ System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["@angular
             });
         };
         JobEditComponent.prototype.save = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             return [4 /*yield*/, this.jobService.updateAsync(this.job)];
@@ -19655,33 +19525,24 @@ System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["@angular
         };
         return JobEditComponent;
     }();
-    JobEditComponent = __decorate([core_1.Component({
+    JobEditComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-admin-job-edit',
         templateUrl: 'job-edit.component.html'
-    }), __metadata("design:paramtypes", [job_service_1.JobService, router_1.ActivatedRoute, router_1.Router])], JobEditComponent);
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.ActivatedRoute, router_1.Router])], JobEditComponent);
     exports.JobEditComponent = JobEditComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/modals/modal-yesno.component.js", ["@angular/core", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/modals/modal-yesno.component.js", ["tslib", "@angular/core", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var ng_bootstrap_1 = $__require("@ng-bootstrap/ng-bootstrap");
     var ModalYesNoComponent = function () {
@@ -19694,36 +19555,27 @@ System.registerDynamic("dist/public/app/modals/modal-yesno.component.js", ["@ang
         }
         return ModalYesNoComponent;
     }();
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalYesNoComponent.prototype, "yes", void 0);
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalYesNoComponent.prototype, "no", void 0);
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalYesNoComponent.prototype, "mensagem", void 0);
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalYesNoComponent.prototype, "title", void 0);
-    ModalYesNoComponent = __decorate([core_1.Component({
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalYesNoComponent.prototype, "yes", void 0);
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalYesNoComponent.prototype, "no", void 0);
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalYesNoComponent.prototype, "mensagem", void 0);
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalYesNoComponent.prototype, "title", void 0);
+    ModalYesNoComponent = tslib_1.__decorate([core_1.Component({
         selector: 'trans-modal-yes-no',
         template: "\n    <div class=\"modal-header\">\n      <button type=\"button\" class=\"close\" aria-label=\"Close\" (click)=\"activeModal.dismiss('no')\">\n        <span aria-hidden=\"true\">&times;</span>\n      </button>\n      <h4 class=\"modal-title\">{{title}}</h4>\n    </div>\n    <div class=\"modal-body\">\n      <p>{{mensagem}}</p>\n    </div>\n    <div class=\"modal-footer\">\n      <button type=\"button\" class=\"btn btn-secondary\" (click)=\"activeModal.close('no')\">{{no}}</button>\n      <button type=\"button\" class=\"btn btn-primary\" (click)=\"activeModal.close('yes')\">{{yes}}</button>\n    </div>\n  "
-    }), __metadata("design:paramtypes", [ng_bootstrap_1.NgbActiveModal])], ModalYesNoComponent);
+    }), tslib_1.__metadata("design:paramtypes", [ng_bootstrap_1.NgbActiveModal])], ModalYesNoComponent);
     exports.ModalYesNoComponent = ModalYesNoComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/modals/modal-ok.component.js", ["@angular/core", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/modals/modal-ok.component.js", ["tslib", "@angular/core", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var ng_bootstrap_1 = $__require("@ng-bootstrap/ng-bootstrap");
     var ModalOkComponent = function () {
@@ -19735,13 +19587,13 @@ System.registerDynamic("dist/public/app/modals/modal-ok.component.js", ["@angula
         }
         return ModalOkComponent;
     }();
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalOkComponent.prototype, "ok", void 0);
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalOkComponent.prototype, "message", void 0);
-    __decorate([core_1.Input(), __metadata("design:type", Object)], ModalOkComponent.prototype, "title", void 0);
-    ModalOkComponent = __decorate([core_1.Component({
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalOkComponent.prototype, "ok", void 0);
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalOkComponent.prototype, "message", void 0);
+    tslib_1.__decorate([core_1.Input(), tslib_1.__metadata("design:type", Object)], ModalOkComponent.prototype, "title", void 0);
+    ModalOkComponent = tslib_1.__decorate([core_1.Component({
         selector: 'trans-modal-ok',
         template: "\n    <div class=\"modal-header\">\n      <button type=\"button\" class=\"close\" aria-label=\"Close\" (click)=\"activeModal.dismiss('ok')\">\n        <span aria-hidden=\"true\">&times;</span>\n      </button>\n      <h4 class=\"modal-title\">{{title}}</h4>\n    </div>\n    <div class=\"modal-body\">\n      <p>{{message}}</p>\n    </div>\n    <div class=\"modal-footer\">\n      <button type=\"button\" class=\"btn btn-primary\" (click)=\"activeModal.close('ok')\">{{ok}}</button>\n    </div>\n  "
-    }), __metadata("design:paramtypes", [ng_bootstrap_1.NgbActiveModal])], ModalOkComponent);
+    }), tslib_1.__metadata("design:paramtypes", [ng_bootstrap_1.NgbActiveModal])], ModalOkComponent);
     exports.ModalOkComponent = ModalOkComponent;
 
     
@@ -28548,98 +28400,13 @@ var define = System.amdDefine;
 });
 
 })();
-System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["@angular/core", "../job.service", "../modals/modal-yesno.component", "../modals/modal-ok.component", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib", "@angular/core", "../job.service", "../modals/modal-yesno.component", "../modals/modal-ok.component", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
-    var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) {
-                try {
-                    step(generator.next(value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function rejected(value) {
-                try {
-                    step(generator["throw"](value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function step(result) {
-                result.done ? resolve(result.value) : new P(function (resolve) {
-                    resolve(result.value);
-                }).then(fulfilled, rejected);
-            }
-            step((generator = generator.apply(thisArg, _arguments)).next());
-        });
-    };
-    var __generator = this && this.__generator || function (thisArg, body) {
-        var _ = { label: 0, sent: function () {
-                if (t[0] & 1) throw t[1];return t[1];
-            }, trys: [], ops: [] },
-            f,
-            y,
-            t;
-        return { next: verb(0), "throw": verb(1), "return": verb(2) };
-        function verb(n) {
-            return function (v) {
-                return step([n, v]);
-            };
-        }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
-                if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [0, t.value];
-                switch (op[0]) {
-                    case 0:case 1:
-                        t = op;break;
-                    case 4:
-                        _.label++;return { value: op[1], done: false };
-                    case 5:
-                        _.label++;y = op[1];op = [0];continue;
-                    case 7:
-                        op = _.ops.pop();_.trys.pop();continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                            _ = 0;continue;
-                        }
-                        if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                            _.label = op[1];break;
-                        }
-                        if (op[0] === 6 && _.label < t[1]) {
-                            _.label = t[1];t = op;break;
-                        }
-                        if (t && _.label < t[2]) {
-                            _.label = t[2];_.ops.push(op);break;
-                        }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop();continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) {
-                op = [6, e];y = 0;
-            } finally {
-                f = t = 0;
-            }
-            if (op[0] & 5) throw op[1];return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var job_service_1 = $__require("../job.service");
     var modal_yesno_component_1 = $__require("../modals/modal-yesno.component");
@@ -28652,9 +28419,9 @@ System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["@angula
             this.jobs = [];
         }
         JobsListComponent.prototype.ngOnInit = function () {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var jobs;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             return [4 /*yield*/, this.jobService.getAllAsync()];
@@ -28667,9 +28434,9 @@ System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["@angula
             });
         };
         JobsListComponent.prototype.delete = function (job) {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var yesNoModal, result, error_1, okModal;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             yesNoModal = this.modalService.open(modal_yesno_component_1.ModalYesNoComponent);
@@ -28698,11 +28465,11 @@ System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["@angula
         };
         return JobsListComponent;
     }();
-    JobsListComponent = __decorate([core_1.Component({
+    JobsListComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-admin-jobs-list',
         templateUrl: 'jobs-list.component.html'
-    }), __metadata("design:paramtypes", [job_service_1.JobService, ng_bootstrap_1.NgbModal])], JobsListComponent);
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, ng_bootstrap_1.NgbModal])], JobsListComponent);
     exports.JobsListComponent = JobsListComponent;
 
     
@@ -33998,6 +33765,220 @@ var define = System.amdDefine;
   exports.VERSION = VERSION;
   exports.__router_private__ = __router_private__;
 }));
+
+})();
+(function() {
+var define = System.amdDefine;
+var __extends;
+var __assign;
+var __rest;
+var __decorate;
+var __param;
+var __metadata;
+var __awaiter;
+var __generator;
+(function(factory) {
+  var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : {};
+  if (typeof define === "function" && define.amd) {
+    define("npm:tslib/tslib.js", ["exports"], function(exports) {
+      factory(createExporter(root, createExporter(exports)));
+    }) && define("tslib", ["npm:tslib/tslib.js"], function(m) {
+      return m;
+    });
+  } else if (typeof module === "object" && typeof module.exports === "object") {
+    factory(createExporter(root, createExporter(module.exports)));
+  } else {
+    factory(createExporter(root));
+  }
+  function createExporter(exports, previous) {
+    return function(id, v) {
+      return exports[id] = previous ? previous(id, v) : v;
+    };
+  }
+})(function(exporter) {
+  var extendStatics = Object.setPrototypeOf || ({__proto__: []} instanceof Array && function(d, b) {
+    d.__proto__ = b;
+  }) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+  };
+  __extends = function(d, b) {
+    extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+  __assign = Object.assign || function(t) {
+    for (var s,
+        i = 1,
+        n = arguments.length; i < n; i++) {
+      s = arguments[i];
+      for (var p in s)
+        if (Object.prototype.hasOwnProperty.call(s, p))
+          t[p] = s[p];
+    }
+    return t;
+  };
+  __rest = function(s, e) {
+    var t = {};
+    for (var p in s)
+      if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+      for (var i = 0,
+          p = Object.getOwnPropertySymbols(s); i < p.length; i++)
+        if (e.indexOf(p[i]) < 0)
+          t[p[i]] = s[p[i]];
+    return t;
+  };
+  __decorate = function(decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function")
+      r = Reflect.decorate(decorators, target, key, desc);
+    else
+      for (var i = decorators.length - 1; i >= 0; i--)
+        if (d = decorators[i])
+          r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+  };
+  __param = function(paramIndex, decorator) {
+    return function(target, key) {
+      decorator(target, key, paramIndex);
+    };
+  };
+  __metadata = function(metadataKey, metadataValue) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function")
+      return Reflect.metadata(metadataKey, metadataValue);
+  };
+  __awaiter = function(thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function(resolve, reject) {
+      function fulfilled(value) {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      }
+      function rejected(value) {
+        try {
+          step(generator["throw"](value));
+        } catch (e) {
+          reject(e);
+        }
+      }
+      function step(result) {
+        result.done ? resolve(result.value) : new P(function(resolve) {
+          resolve(result.value);
+        }).then(fulfilled, rejected);
+      }
+      step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+  };
+  __generator = function(thisArg, body) {
+    var _ = {
+      label: 0,
+      sent: function() {
+        if (t[0] & 1)
+          throw t[1];
+        return t[1];
+      },
+      trys: [],
+      ops: []
+    },
+        f,
+        y,
+        t;
+    return {
+      next: verb(0),
+      "throw": verb(1),
+      "return": verb(2)
+    };
+    function verb(n) {
+      return function(v) {
+        return step([n, v]);
+      };
+    }
+    function step(op) {
+      if (f)
+        throw new TypeError("Generator is already executing.");
+      while (_)
+        try {
+          if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done)
+            return t;
+          if (y = 0, t)
+            op = [0, t.value];
+          switch (op[0]) {
+            case 0:
+            case 1:
+              t = op;
+              break;
+            case 4:
+              _.label++;
+              return {
+                value: op[1],
+                done: false
+              };
+            case 5:
+              _.label++;
+              y = op[1];
+              op = [0];
+              continue;
+            case 7:
+              op = _.ops.pop();
+              _.trys.pop();
+              continue;
+            default:
+              if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                _ = 0;
+                continue;
+              }
+              if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) {
+                _.label = op[1];
+                break;
+              }
+              if (op[0] === 6 && _.label < t[1]) {
+                _.label = t[1];
+                t = op;
+                break;
+              }
+              if (t && _.label < t[2]) {
+                _.label = t[2];
+                _.ops.push(op);
+                break;
+              }
+              if (t[2])
+                _.ops.pop();
+              _.trys.pop();
+              continue;
+          }
+          op = body.call(thisArg, _);
+        } catch (e) {
+          op = [6, e];
+          y = 0;
+        } finally {
+          f = t = 0;
+        }
+      if (op[0] & 5)
+        throw op[1];
+      return {
+        value: op[0] ? op[1] : void 0,
+        done: true
+      };
+    }
+  };
+  exporter("__extends", __extends);
+  exporter("__assign", __assign);
+  exporter("__rest", __rest);
+  exporter("__decorate", __decorate);
+  exporter("__param", __param);
+  exporter("__metadata", __metadata);
+  exporter("__awaiter", __awaiter);
+  exporter("__generator", __generator);
+});
 
 })();
 (function() {
@@ -39889,98 +39870,13 @@ System.registerDynamic('npm:rxjs/add/operator/toPromise.js', ['../../Observable'
 
   return module.exports;
 });
-System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@angular/http", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/core", "@angular/http", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
-    var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) {
-                try {
-                    step(generator.next(value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function rejected(value) {
-                try {
-                    step(generator["throw"](value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function step(result) {
-                result.done ? resolve(result.value) : new P(function (resolve) {
-                    resolve(result.value);
-                }).then(fulfilled, rejected);
-            }
-            step((generator = generator.apply(thisArg, _arguments)).next());
-        });
-    };
-    var __generator = this && this.__generator || function (thisArg, body) {
-        var _ = { label: 0, sent: function () {
-                if (t[0] & 1) throw t[1];return t[1];
-            }, trys: [], ops: [] },
-            f,
-            y,
-            t;
-        return { next: verb(0), "throw": verb(1), "return": verb(2) };
-        function verb(n) {
-            return function (v) {
-                return step([n, v]);
-            };
-        }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
-                if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [0, t.value];
-                switch (op[0]) {
-                    case 0:case 1:
-                        t = op;break;
-                    case 4:
-                        _.label++;return { value: op[1], done: false };
-                    case 5:
-                        _.label++;y = op[1];op = [0];continue;
-                    case 7:
-                        op = _.ops.pop();_.trys.pop();continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                            _ = 0;continue;
-                        }
-                        if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                            _.label = op[1];break;
-                        }
-                        if (op[0] === 6 && _.label < t[1]) {
-                            _.label = t[1];t = op;break;
-                        }
-                        if (t && _.label < t[2]) {
-                            _.label = t[2];_.ops.push(op);break;
-                        }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop();continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) {
-                op = [6, e];y = 0;
-            } finally {
-                f = t = 0;
-            }
-            if (op[0] & 5) throw op[1];return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var http_1 = $__require("@angular/http");
     $__require("rxjs/add/operator/toPromise");
@@ -39991,9 +39887,9 @@ System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@ang
             this.headers = new http_1.Headers({ 'Content-Type': 'application/json' });
         }
         JobService.prototype.getAllAsync = function () {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var response, jobs, error_1;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2,, 3]);
@@ -40013,9 +39909,9 @@ System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@ang
             });
         };
         JobService.prototype.getJobAsync = function (id) {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var url, response, job, error_2;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             url = this.jobsUrl + "/" + id;
@@ -40038,9 +39934,9 @@ System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@ang
             });
         };
         JobService.prototype.updateAsync = function (job) {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var url, error_3;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             url = this.jobsUrl + "/" + job._id;
@@ -40062,9 +39958,9 @@ System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@ang
             });
         };
         JobService.prototype.createAsync = function (job) {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var result, error_4;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2,, 3]);
@@ -40083,9 +39979,9 @@ System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@ang
             });
         };
         JobService.prototype.deleteAsync = function (id) {
-            return __awaiter(this, void 0, void 0, function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var url, error_5;
-                return __generator(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             url = this.jobsUrl + "/" + id;
@@ -40108,7 +40004,7 @@ System.registerDynamic("dist/public/app/job.service.js", ["@angular/core", "@ang
         };
         return JobService;
     }();
-    JobService = __decorate([core_1.Injectable(), __metadata("design:paramtypes", [http_1.Http])], JobService);
+    JobService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [http_1.Http])], JobService);
     exports.JobService = JobService;
 
     
@@ -40131,98 +40027,13 @@ System.registerDynamic("dist/public/app/job.js", [], true, function ($__require,
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/admin/job-create.component.js", ["@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
-    var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) {
-                try {
-                    step(generator.next(value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function rejected(value) {
-                try {
-                    step(generator["throw"](value));
-                } catch (e) {
-                    reject(e);
-                }
-            }
-            function step(result) {
-                result.done ? resolve(result.value) : new P(function (resolve) {
-                    resolve(result.value);
-                }).then(fulfilled, rejected);
-            }
-            step((generator = generator.apply(thisArg, _arguments)).next());
-        });
-    };
-    var __generator = this && this.__generator || function (thisArg, body) {
-        var _ = { label: 0, sent: function () {
-                if (t[0] & 1) throw t[1];return t[1];
-            }, trys: [], ops: [] },
-            f,
-            y,
-            t;
-        return { next: verb(0), "throw": verb(1), "return": verb(2) };
-        function verb(n) {
-            return function (v) {
-                return step([n, v]);
-            };
-        }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (_) try {
-                if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [0, t.value];
-                switch (op[0]) {
-                    case 0:case 1:
-                        t = op;break;
-                    case 4:
-                        _.label++;return { value: op[1], done: false };
-                    case 5:
-                        _.label++;y = op[1];op = [0];continue;
-                    case 7:
-                        op = _.ops.pop();_.trys.pop();continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                            _ = 0;continue;
-                        }
-                        if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                            _.label = op[1];break;
-                        }
-                        if (op[0] === 6 && _.label < t[1]) {
-                            _.label = t[1];t = op;break;
-                        }
-                        if (t && _.label < t[2]) {
-                            _.label = t[2];_.ops.push(op);break;
-                        }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop();continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) {
-                op = [6, e];y = 0;
-            } finally {
-                f = t = 0;
-            }
-            if (op[0] & 5) throw op[1];return { value: op[0] ? op[1] : void 0, done: true };
-        }
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var router_1 = $__require("@angular/router");
     var job_service_1 = $__require("../job.service");
@@ -40234,8 +40045,8 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["@angul
             this.job = new job_1.Job();
         }
         JobCreateComponent.prototype.save = function () {
-            return __awaiter(this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             return [4 /*yield*/, this.jobService.createAsync(this.job)];
@@ -40252,33 +40063,24 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["@angul
         };
         return JobCreateComponent;
     }();
-    JobCreateComponent = __decorate([core_1.Component({
+    JobCreateComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-admin-job-edit',
         templateUrl: 'job-edit.component.html'
-    }), __metadata("design:paramtypes", [job_service_1.JobService, router_1.Router])], JobCreateComponent);
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.Router])], JobCreateComponent);
     exports.JobCreateComponent = JobCreateComponent;
 
     
 
     return module.exports;
 });
-System.registerDynamic("dist/public/app/app-routing.module.js", ["@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var router_1 = $__require("@angular/router");
     var admin_component_1 = $__require("./admin/admin.component");
@@ -40293,10 +40095,10 @@ System.registerDynamic("dist/public/app/app-routing.module.js", ["@angular/core"
         function AppRoutingModule() {}
         return AppRoutingModule;
     }();
-    AppRoutingModule = __decorate([core_1.NgModule({
+    AppRoutingModule = tslib_1.__decorate([core_1.NgModule({
         imports: [router_1.RouterModule.forRoot(routes)],
         exports: [router_1.RouterModule]
-    }), __metadata("design:paramtypes", [])], AppRoutingModule);
+    })], AppRoutingModule);
     exports.AppRoutingModule = AppRoutingModule;
 
     
@@ -42188,22 +41990,13 @@ System.registerDynamic("dist/public/app/rxjs-extensions.js", ["rxjs/add/observab
 
   return module.exports;
 });
-System.registerDynamic("dist/public/app/app.module.js", ["@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./rxjs-extensions"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./rxjs-extensions"], true, function ($__require, exports, module) {
     "use strict";
 
     var define,
         global = this || self,
         GLOBAL = global;
-    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
-        var c = arguments.length,
-            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
-            d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var __metadata = this && this.__metadata || function (k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    };
+    var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var platform_browser_1 = $__require("@angular/platform-browser");
     var forms_1 = $__require("@angular/forms");
@@ -42226,13 +42019,13 @@ System.registerDynamic("dist/public/app/app.module.js", ["@angular/core", "@angu
         function AppModule() {}
         return AppModule;
     }();
-    AppModule = __decorate([core_1.NgModule({
+    AppModule = tslib_1.__decorate([core_1.NgModule({
         imports: [platform_browser_1.BrowserModule, forms_1.FormsModule, http_1.HttpModule, ng_bootstrap_1.NgbModule.forRoot(), app_routing_module_1.AppRoutingModule],
         declarations: [app_component_1.AppComponent, admin_component_1.AdminComponent, home_component_1.HomeComponent, login_recruiter_component_1.LoginRecruiterComponent, login_candidate_component_1.LoginCandidateComponent, job_edit_component_1.JobEditComponent, jobs_list_component_1.JobsListComponent, job_create_component_1.JobCreateComponent, modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
         providers: [job_service_1.JobService],
         entryComponents: [modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
         bootstrap: [app_component_1.AppComponent]
-    }), __metadata("design:paramtypes", [])], AppModule);
+    })], AppModule);
     exports.AppModule = AppModule;
 
     

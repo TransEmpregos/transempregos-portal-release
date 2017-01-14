@@ -1,12 +1,5 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
-    });
-};
+const tslib_1 = require("tslib");
 const mongoose = require("mongoose");
 const config_1 = require("./config");
 const upmonitor_1 = require("./upmonitor");
@@ -28,7 +21,7 @@ let connectionOptions = {
 };
 let reconnectTimeout;
 function reconnectAsync() {
-    return __awaiter(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         log('Trying to reconnect...');
         switch (mongoose.connection.readyState) {
             case 0:
@@ -57,7 +50,7 @@ function tryToReconnect() {
     reconnectTimeout = setTimeout(reconnectAsync, 5000);
 }
 function rebuildConnectionAsync() {
-    return __awaiter(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         clearTimeout(reconnectTimeout);
         log('Rebuilding the connection...');
         switch (mongoose.connection.readyState) {
@@ -84,7 +77,7 @@ function rebuildConnectionAsync() {
 }
 exports.rebuildConnectionAsync = rebuildConnectionAsync;
 function startConnectionAsync() {
-    return __awaiter(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (connectionString) {
             connectionOptions.server.socketOptions.connectTimeoutMS = 10000;
             connectionOptions.server.socketOptions.socketTimeoutMS = 10000;

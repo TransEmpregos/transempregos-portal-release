@@ -1,17 +1,10 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
-    });
-};
+const tslib_1 = require("tslib");
 const _transRouter_1 = require("./_transRouter");
 const job_1 = require("../models/job");
 const upmonitor_1 = require("../upmonitor");
 const router = new _transRouter_1.Router();
-router.get('/', (ctx) => __awaiter(this, void 0, void 0, function* () {
+router.get('/', (ctx) => tslib_1.__awaiter(this, void 0, void 0, function* () {
     if (upmonitor_1.upMonitor.isDown) {
         log(`Server is down because of ${upmonitor_1.upMonitor.reason}, not trying to go the database.`);
         yield ctx.render('index', { jobs: null, isDown: true });
