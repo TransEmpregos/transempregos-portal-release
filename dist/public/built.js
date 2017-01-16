@@ -28999,11 +28999,16 @@ System.registerDynamic('npm:rxjs/operator/observeOn.js', ['../Subscriber', '../N
         }
         ObserveOnSubscriber.dispatch = function (arg) {
             var notification = arg.notification,
-                destination = arg.destination;
+                destination = arg.destination,
+                subscription = arg.subscription;
             notification.observe(destination);
+            if (subscription) {
+                subscription.unsubscribe();
+            }
         };
         ObserveOnSubscriber.prototype.scheduleMessage = function (notification) {
-            this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, new ObserveOnMessage(notification, this.destination)));
+            var message = new ObserveOnMessage(notification, this.destination);
+            message.subscription = this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, message));
         };
         ObserveOnSubscriber.prototype._next = function (value) {
             this.scheduleMessage(Notification_1.Notification.createNext(value));
@@ -29264,6 +29269,12 @@ System.registerDynamic("npm:rxjs/operator/every.js", ["../Subscriber"], true, fu
     var Subscriber_1 = $__require("../Subscriber");
     /**
      * Returns an Observable that emits whether or not every item of the source satisfies the condition specified.
+     *
+     * @example <caption>A simple example emitting true if all elements are less than 5, false otherwise</caption>
+     *  Observable.of(1, 2, 3, 4, 5, 6)
+     *     .every(x => x < 5)
+     *     .subscribe(x => console.log(x)); // -> false
+     *
      * @param {function} predicate a function for determining if an item meets a specified condition.
      * @param {any} [thisArg] optional object to use for `this` in the callback
      * @return {Observable} an Observable of booleans that determines if all items of the source Observable meet the condition specified.
@@ -29908,7 +29919,7 @@ System.registerDynamic('npm:rxjs/observable/PromiseObservable.js', ['../util/roo
          * @see {@link from}
          *
          * @param {Promise<T>} promise The promise to be converted.
-         * @param {Scheduler} [scheduler] An optional Scheduler to use for scheduling
+         * @param {Scheduler} [scheduler] An optional IScheduler to use for scheduling
          * the delivery of the resolved value (or the rejection).
          * @return {Observable<T>} An Observable which wraps the Promise.
          * @static true
@@ -40234,7 +40245,7 @@ System.registerDynamic("npm:rxjs/observable/EmptyObservable.js", ["../Observable
          * @see {@link of}
          * @see {@link throw}
          *
-         * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
+         * @param {Scheduler} [scheduler] A {@link IScheduler} to use for scheduling
          * the emission of the complete notification.
          * @return {Observable} An "empty" Observable: emits only the complete
          * notification.
@@ -40326,8 +40337,8 @@ System.registerDynamic('npm:rxjs/observable/ArrayObservable.js', ['../Observable
          * This static operator is useful for creating a simple Observable that only
          * emits the arguments given, and the complete notification thereafter. It can
          * be used for composing with other Observables, such as with {@link concat}.
-         * By default, it uses a `null` Scheduler, which means the `next`
-         * notifications are sent synchronously, although with a different Scheduler
+         * By default, it uses a `null` IScheduler, which means the `next`
+         * notifications are sent synchronously, although with a different IScheduler
          * it is possible to determine when those notifications will be delivered.
          *
          * @example <caption>Emit 10, 20, 30, then 'a', 'b', 'c', then start ticking every second.</caption>
@@ -40343,7 +40354,7 @@ System.registerDynamic('npm:rxjs/observable/ArrayObservable.js', ['../Observable
          * @see {@link throw}
          *
          * @param {...T} values Arguments that represent `next` values to be emitted.
-         * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
+         * @param {Scheduler} [scheduler] A {@link IScheduler} to use for scheduling
          * the emissions of the `next` notifications.
          * @return {Observable<T>} An Observable that emits each given input value.
          * @static true
@@ -40492,7 +40503,7 @@ System.registerDynamic("npm:rxjs/observable/ErrorObservable.js", ["../Observable
          * @see {@link of}
          *
          * @param {any} error The particular Error to pass to the error notification.
-         * @param {Scheduler} [scheduler] A {@link Scheduler} to use for scheduling
+         * @param {Scheduler} [scheduler] A {@link IScheduler} to use for scheduling
          * the emission of the error notification.
          * @return {Observable} An error Observable: emits only the error notification
          * using the given error argument.
@@ -41024,7 +41035,7 @@ System.registerDynamic('npm:rxjs/operator/debounceTime.js', ['../Subscriber', '.
      * This is a rate-limiting operator, because it is impossible for more than one
      * value to be emitted in any time window of duration `dueTime`, but it is also
      * a delay-like operator since output emissions do not occur at the same time as
-     * they did on the source Observable. Optionally takes a {@link Scheduler} for
+     * they did on the source Observable. Optionally takes a {@link IScheduler} for
      * managing timers.
      *
      * @example <caption>Emit the most recent click after a burst of clicks</caption>
@@ -41042,7 +41053,7 @@ System.registerDynamic('npm:rxjs/operator/debounceTime.js', ['../Subscriber', '.
      * unit determined internally by the optional `scheduler`) for the window of
      * time required to wait for emission silence before emitting the most recent
      * source value.
-     * @param {Scheduler} [scheduler=async] The {@link Scheduler} to use for
+     * @param {Scheduler} [scheduler=async] The {@link IScheduler} to use for
      * managing the timers that handle the timeout for each value.
      * @return {Observable} An Observable that delays the emissions of the source
      * Observable by the specified `dueTime`, and may drop some values if they occur
@@ -41149,8 +41160,38 @@ System.registerDynamic('npm:rxjs/operator/distinctUntilChanged.js', ['../Subscri
     /* tslint:disable:max-line-length */
     /**
      * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the previous item.
+     *
      * If a comparator function is provided, then it will be called for each item to test for whether or not that value should be emitted.
+     *
      * If a comparator function is not provided, an equality check is used by default.
+     *
+     * @example <caption>A simple example with numbers</caption>
+     * Observable.of(1, 1, 2, 2, 2, 1, 1, 2, 3, 3, 4)
+     *   .distinctUntilChanged()
+     *   .subscribe(x => console.log(x)); // 1, 2, 1, 2, 3, 4
+     *
+     * @example <caption>An example using a compare function</caption>
+     * interface Person {
+     *    age: number,
+     *    name: string
+     * }
+     *
+     * Observable.of<Person>(
+     *     { age: 4, name: 'Foo'},
+     *     { age: 7, name: 'Bar'},
+     *     { age: 5, name: 'Foo'})
+     *     { age: 6, name: 'Foo'})
+     *     .distinctUntilChanged((p: Person, q: Person) => p.name === q.name)
+     *     .subscribe(x => console.log(x));
+     *
+     * // displays:
+     * // { age: 4, name: 'Foo' }
+     * // { age: 7, name: 'Bar' }
+     * // { age: 5, name: 'Foo' }
+     *
+     * @see {@link distinct}
+     * @see {@link distinctUntilKeyChanged}
+     *
      * @param {function} [compare] optional comparison function called to test if an item is distinct from the previous item in the source.
      * @return {Observable} an Observable that emits items from the source Observable with distinct values.
      * @method distinctUntilChanged
@@ -42406,6 +42447,13 @@ System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/is
     var define,
         global = this || self,
         GLOBAL = global;
+    var __extends = this && this.__extends || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
     var isArray_1 = $__require('./util/isArray');
     var isObject_1 = $__require('./util/isObject');
     var isFunction_1 = $__require('./util/isFunction');
@@ -42460,7 +42508,7 @@ System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/is
                 var trial = tryCatch_1.tryCatch(_unsubscribe).call(this);
                 if (trial === errorObject_1.errorObject) {
                     hasErrors = true;
-                    (errors = errors || []).push(errorObject_1.errorObject.e);
+                    errors = errors || (errorObject_1.errorObject.e instanceof UnsubscriptionError_1.UnsubscriptionError ? flattenUnsubscriptionErrors(errorObject_1.errorObject.e.errors) : [errorObject_1.errorObject.e]);
                 }
             }
             if (isArray_1.isArray(_subscriptions)) {
@@ -42475,7 +42523,7 @@ System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/is
                             errors = errors || [];
                             var err = errorObject_1.errorObject.e;
                             if (err instanceof UnsubscriptionError_1.UnsubscriptionError) {
-                                errors = errors.concat(err.errors);
+                                errors = errors.concat(flattenUnsubscriptionErrors(err.errors));
                             } else {
                                 errors.push(err);
                             }
@@ -42518,17 +42566,19 @@ System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/is
                     sub = new Subscription(teardown);
                 case 'object':
                     if (sub.closed || typeof sub.unsubscribe !== 'function') {
-                        break;
+                        return sub;
                     } else if (this.closed) {
                         sub.unsubscribe();
-                    } else {
-                        (this._subscriptions || (this._subscriptions = [])).push(sub);
+                        return sub;
                     }
                     break;
                 default:
                     throw new Error('unrecognized teardown ' + teardown + ' added to Subscription.');
             }
-            return sub;
+            var childSub = new ChildSubscription(sub, this);
+            this._subscriptions = this._subscriptions || [];
+            this._subscriptions.push(childSub);
+            return childSub;
         };
         /**
          * Removes a Subscription from the internal list of subscriptions that will
@@ -42556,6 +42606,28 @@ System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/is
         return Subscription;
     }();
     exports.Subscription = Subscription;
+    var ChildSubscription = function (_super) {
+        __extends(ChildSubscription, _super);
+        function ChildSubscription(_innerSub, _parent) {
+            _super.call(this);
+            this._innerSub = _innerSub;
+            this._parent = _parent;
+        }
+        ChildSubscription.prototype._unsubscribe = function () {
+            var _a = this,
+                _innerSub = _a._innerSub,
+                _parent = _a._parent;
+            _parent.remove(this);
+            _innerSub.unsubscribe();
+        };
+        return ChildSubscription;
+    }(Subscription);
+    exports.ChildSubscription = ChildSubscription;
+    function flattenUnsubscriptionErrors(errors) {
+        return errors.reduce(function (errs, err) {
+            return errs.concat(err instanceof UnsubscriptionError_1.UnsubscriptionError ? err.errors : err);
+        }, []);
+    }
     
 
     return module.exports;
