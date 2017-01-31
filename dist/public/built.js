@@ -5,7 +5,7 @@ var define = System.amdDefine;
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core')) : typeof define === 'function' && define.amd ? define("npm:@angular/compiler/bundles/compiler.umd.js", ["exports", "@angular/core"], factory) : (factory((global.ng = global.ng || {}, global.ng.compiler = global.ng.compiler || {}), global.ng.core));
 }(this, function(exports, _angular_core) {
   'use strict';
-  var VERSION = new _angular_core.Version('2.4.2');
+  var VERSION = new _angular_core.Version('2.4.5');
   var TextAst = (function() {
     function TextAst(value, ngContentIndex, sourceSpan) {
       this.value = value;
@@ -859,7 +859,7 @@ var define = System.amdDefine;
   function getHtmlTagDefinition(tagName) {
     return TAG_DEFINITIONS[tagName.toLowerCase()] || _DEFAULT_TAG_DEFINITION;
   }
-  var _SELECTOR_REGEXP = new RegExp('(\\:not\\()|' + '([-\\w]+)|' + '(?:\\.([-\\w]+))|' + '(?:\\[([.-\\w*]+)(?:=([^\\]]*))?\\])|' + '(\\))|' + '(\\s*,\\s*)', 'g');
+  var _SELECTOR_REGEXP = new RegExp('(\\:not\\()|' + '([-\\w]+)|' + '(?:\\.([-\\w]+))|' + '(?:\\[([-.\\w*]+)(?:=([^\\]]*))?\\])|' + '(\\))|' + '(\\s*,\\s*)', 'g');
   var CssSelector = (function() {
     function CssSelector() {
       this.element = null;
@@ -2627,7 +2627,7 @@ var define = System.amdDefine;
         this.advance();
         str += two;
       }
-      if (isPresent(threeCode) && this.peek == threeCode) {
+      if (threeCode != null && this.peek == threeCode) {
         this.advance();
         str += three;
       }
@@ -4544,7 +4544,7 @@ var define = System.amdDefine;
       var _a = this._getParentElementSkippingContainers(),
           parent = _a.parent,
           container = _a.container;
-      if (isPresent(parent) && tagDef.requireExtraParent(parent.name)) {
+      if (parent && tagDef.requireExtraParent(parent.name)) {
         var newParent = new Element(tagDef.parentToAdd, [], [], el.sourceSpan, el.startSourceSpan, el.endSourceSpan);
         this._insertBeforeContainer(parent, container, newParent);
       }
@@ -4807,9 +4807,14 @@ var define = System.amdDefine;
       return this._hashTag("/" + tag, {}, false);
     };
     PlaceholderRegistry.prototype._generateUniqueName = function(base) {
-      var next = this._placeHolderNameCounts[base];
-      this._placeHolderNameCounts[base] = next ? next + 1 : 1;
-      return next ? base + "_" + next : base;
+      var seen = this._placeHolderNameCounts.hasOwnProperty(base);
+      if (!seen) {
+        this._placeHolderNameCounts[base] = 1;
+        return base;
+      }
+      var id = this._placeHolderNameCounts[base];
+      this._placeHolderNameCounts[base] = id + 1;
+      return base + "_" + id;
     };
     return PlaceholderRegistry;
   }());
@@ -5051,41 +5056,28 @@ var define = System.amdDefine;
       this._depth++;
       var wasInI18nNode = this._inI18nNode;
       var wasInImplicitNode = this._inImplicitNode;
-      var childNodes;
+      var childNodes = [];
+      var translatedChildNodes;
       var i18nAttr = _getI18nAttr(el);
+      var i18nMeta = i18nAttr ? i18nAttr.value : '';
       var isImplicit = this._implicitTags.some(function(tag) {
         return el.name === tag;
       }) && !this._inIcu && !this._isInTranslatableSection;
       var isTopLevelImplicit = !wasInImplicitNode && isImplicit;
-      this._inImplicitNode = this._inImplicitNode || isImplicit;
+      this._inImplicitNode = wasInImplicitNode || isImplicit;
       if (!this._isInTranslatableSection && !this._inIcu) {
-        if (i18nAttr) {
+        if (i18nAttr || isTopLevelImplicit) {
           this._inI18nNode = true;
-          var message = this._addMessage(el.children, i18nAttr.value);
-          childNodes = this._translateMessage(el, message);
-        } else if (isTopLevelImplicit) {
-          this._inI18nNode = true;
-          var message = this._addMessage(el.children);
-          childNodes = this._translateMessage(el, message);
+          var message = this._addMessage(el.children, i18nMeta);
+          translatedChildNodes = this._translateMessage(el, message);
         }
         if (this._mode == _VisitorMode.Extract) {
           var isTranslatable = i18nAttr || isTopLevelImplicit;
-          if (isTranslatable) {
+          if (isTranslatable)
             this._openTranslatableSection(el);
-          }
           visitAll(this, el.children);
-          if (isTranslatable) {
+          if (isTranslatable)
             this._closeTranslatableSection(el, el.children);
-          }
-        }
-        if (this._mode === _VisitorMode.Merge && !i18nAttr && !isTopLevelImplicit) {
-          childNodes = [];
-          el.children.forEach(function(child) {
-            var visited = child.visit(_this, context);
-            if (visited && !_this._isInTranslatableSection) {
-              childNodes = childNodes.concat(visited);
-            }
-          });
         }
       } else {
         if (i18nAttr || isTopLevelImplicit) {
@@ -5094,15 +5086,15 @@ var define = System.amdDefine;
         if (this._mode == _VisitorMode.Extract) {
           visitAll(this, el.children);
         }
-        if (this._mode == _VisitorMode.Merge) {
-          childNodes = [];
-          el.children.forEach(function(child) {
-            var visited = child.visit(_this, context);
-            if (visited && !_this._isInTranslatableSection) {
-              childNodes = childNodes.concat(visited);
-            }
-          });
-        }
+      }
+      if (this._mode === _VisitorMode.Merge) {
+        var visitNodes = translatedChildNodes || el.children;
+        visitNodes.forEach(function(child) {
+          var visited = child.visit(_this, context);
+          if (visited && !_this._isInTranslatableSection) {
+            childNodes = childNodes.concat(visited);
+          }
+        });
       }
       this._visitAttributesOf(el);
       this._depth--;
@@ -5283,7 +5275,7 @@ var define = System.amdDefine;
   function getXmlTagDefinition(tagName) {
     return _TAG_DEFINITION;
   }
-  var __extends$8 = (this && this.__extends) || function(d, b) {
+  var __extends$9 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -5293,7 +5285,7 @@ var define = System.amdDefine;
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var XmlParser = (function(_super) {
-    __extends$8(XmlParser, _super);
+    __extends$9(XmlParser, _super);
     function XmlParser() {
       _super.call(this, getXmlTagDefinition);
     }
@@ -5305,7 +5297,7 @@ var define = System.amdDefine;
     };
     return XmlParser;
   }(Parser$1));
-  var __extends$9 = (this && this.__extends) || function(d, b) {
+  var __extends$10 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -5363,7 +5355,7 @@ var define = System.amdDefine;
     });
   }
   var _SerializerIgnoreIcuExpVisitor = (function(_super) {
-    __extends$9(_SerializerIgnoreIcuExpVisitor, _super);
+    __extends$10(_SerializerIgnoreIcuExpVisitor, _super);
     function _SerializerIgnoreIcuExpVisitor() {
       _super.apply(this, arguments);
     }
@@ -5648,7 +5640,17 @@ var define = System.amdDefine;
     }
     return product;
   }
-  var __extends$10 = (this && this.__extends) || function(d, b) {
+  var Serializer = (function() {
+    function Serializer() {}
+    Serializer.prototype.write = function(messages) {};
+    Serializer.prototype.load = function(content, url) {};
+    Serializer.prototype.digest = function(message) {};
+    Serializer.prototype.createNameMapper = function(message) {
+      return null;
+    };
+    return Serializer;
+  }());
+  var __extends$11 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -5749,7 +5751,7 @@ var define = System.amdDefine;
     return Text;
   }());
   var CR = (function(_super) {
-    __extends$10(CR, _super);
+    __extends$11(CR, _super);
     function CR(ws) {
       if (ws === void 0) {
         ws = 0;
@@ -5764,6 +5766,15 @@ var define = System.amdDefine;
       return text.replace(entry[0], entry[1]);
     }, text);
   }
+  var __extends$8 = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var _VERSION = '1.2';
   var _XMLNS = 'urn:oasis:names:tc:xliff:document:1.2';
   var _SOURCE_LANG = 'en';
@@ -5771,8 +5782,11 @@ var define = System.amdDefine;
   var _SOURCE_TAG = 'source';
   var _TARGET_TAG = 'target';
   var _UNIT_TAG = 'trans-unit';
-  var Xliff = (function() {
-    function Xliff() {}
+  var Xliff = (function(_super) {
+    __extends$8(Xliff, _super);
+    function Xliff() {
+      _super.apply(this, arguments);
+    }
     Xliff.prototype.write = function(messages) {
       var _this = this;
       var visitor = new _WriteVisitor();
@@ -5841,7 +5855,7 @@ var define = System.amdDefine;
       return digest(message);
     };
     return Xliff;
-  }());
+  }(Serializer));
   var _WriteVisitor = (function() {
     function _WriteVisitor() {}
     _WriteVisitor.prototype.visitText = function(text, context) {
@@ -5994,13 +6008,25 @@ var define = System.amdDefine;
         return "x-" + tag;
     }
   }
+  var __extends$12 = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var _MESSAGES_TAG = 'messagebundle';
   var _MESSAGE_TAG = 'msg';
   var _PLACEHOLDER_TAG$1 = 'ph';
   var _EXEMPLE_TAG = 'ex';
   var _DOCTYPE = "<!ELEMENT messagebundle (msg)*>\n<!ATTLIST messagebundle class CDATA #IMPLIED>\n\n<!ELEMENT msg (#PCDATA|ph|source)*>\n<!ATTLIST msg id CDATA #IMPLIED>\n<!ATTLIST msg seq CDATA #IMPLIED>\n<!ATTLIST msg name CDATA #IMPLIED>\n<!ATTLIST msg desc CDATA #IMPLIED>\n<!ATTLIST msg meaning CDATA #IMPLIED>\n<!ATTLIST msg obsolete (obsolete) #IMPLIED>\n<!ATTLIST msg xml:space (default|preserve) \"default\">\n<!ATTLIST msg is_hidden CDATA #IMPLIED>\n\n<!ELEMENT source (#PCDATA)>\n\n<!ELEMENT ph (#PCDATA|ex)*>\n<!ATTLIST ph name CDATA #REQUIRED>\n\n<!ELEMENT ex (#PCDATA)>";
-  var Xmb = (function() {
-    function Xmb() {}
+  var Xmb = (function(_super) {
+    __extends$12(Xmb, _super);
+    function Xmb() {
+      _super.apply(this, arguments);
+    }
     Xmb.prototype.write = function(messages) {
       var _this = this;
       var exampleVisitor = new ExampleVisitor();
@@ -6012,6 +6038,7 @@ var define = System.amdDefine;
         if (visited[id])
           return;
         visited[id] = true;
+        var mapper = _this.createNameMapper(message);
         var attrs = {id: id};
         if (message.description) {
           attrs['desc'] = message.description;
@@ -6019,7 +6046,7 @@ var define = System.amdDefine;
         if (message.meaning) {
           attrs['meaning'] = message.meaning;
         }
-        rootNode.children.push(new CR(2), new Tag(_MESSAGE_TAG, attrs, visitor.serialize(message.nodes)));
+        rootNode.children.push(new CR(2), new Tag(_MESSAGE_TAG, attrs, visitor.serialize(message.nodes, {mapper: mapper})));
       });
       rootNode.children.push(new CR());
       return serialize([new Declaration({
@@ -6033,50 +6060,57 @@ var define = System.amdDefine;
     Xmb.prototype.digest = function(message) {
       return digest$1(message);
     };
+    Xmb.prototype.createNameMapper = function(message) {
+      return new XmbPlaceholderMapper(message);
+    };
     return Xmb;
-  }());
+  }(Serializer));
   var _Visitor$2 = (function() {
     function _Visitor() {}
-    _Visitor.prototype.visitText = function(text, context) {
+    _Visitor.prototype.visitText = function(text, ctx) {
       return [new Text$2(text.value)];
     };
-    _Visitor.prototype.visitContainer = function(container, context) {
+    _Visitor.prototype.visitContainer = function(container, ctx) {
       var _this = this;
       var nodes = [];
       container.children.forEach(function(node) {
-        return nodes.push.apply(nodes, node.visit(_this));
+        return nodes.push.apply(nodes, node.visit(_this, ctx));
       });
       return nodes;
     };
-    _Visitor.prototype.visitIcu = function(icu, context) {
+    _Visitor.prototype.visitIcu = function(icu, ctx) {
       var _this = this;
       var nodes = [new Text$2("{" + icu.expressionPlaceholder + ", " + icu.type + ", ")];
       Object.keys(icu.cases).forEach(function(c) {
-        nodes.push.apply(nodes, [new Text$2(c + " {")].concat(icu.cases[c].visit(_this), [new Text$2("} ")]));
+        nodes.push.apply(nodes, [new Text$2(c + " {")].concat(icu.cases[c].visit(_this, ctx), [new Text$2("} ")]));
       });
       nodes.push(new Text$2("}"));
       return nodes;
     };
-    _Visitor.prototype.visitTagPlaceholder = function(ph, context) {
+    _Visitor.prototype.visitTagPlaceholder = function(ph, ctx) {
       var startEx = new Tag(_EXEMPLE_TAG, {}, [new Text$2("<" + ph.tag + ">")]);
-      var startTagPh = new Tag(_PLACEHOLDER_TAG$1, {name: ph.startName}, [startEx]);
+      var name = ctx.mapper.toPublicName(ph.startName);
+      var startTagPh = new Tag(_PLACEHOLDER_TAG$1, {name: name}, [startEx]);
       if (ph.isVoid) {
         return [startTagPh];
       }
       var closeEx = new Tag(_EXEMPLE_TAG, {}, [new Text$2("</" + ph.tag + ">")]);
-      var closeTagPh = new Tag(_PLACEHOLDER_TAG$1, {name: ph.closeName}, [closeEx]);
-      return [startTagPh].concat(this.serialize(ph.children), [closeTagPh]);
+      name = ctx.mapper.toPublicName(ph.closeName);
+      var closeTagPh = new Tag(_PLACEHOLDER_TAG$1, {name: name}, [closeEx]);
+      return [startTagPh].concat(this.serialize(ph.children, ctx), [closeTagPh]);
     };
-    _Visitor.prototype.visitPlaceholder = function(ph, context) {
-      return [new Tag(_PLACEHOLDER_TAG$1, {name: ph.name})];
+    _Visitor.prototype.visitPlaceholder = function(ph, ctx) {
+      var name = ctx.mapper.toPublicName(ph.name);
+      return [new Tag(_PLACEHOLDER_TAG$1, {name: name})];
     };
-    _Visitor.prototype.visitIcuPlaceholder = function(ph, context) {
-      return [new Tag(_PLACEHOLDER_TAG$1, {name: ph.name})];
+    _Visitor.prototype.visitIcuPlaceholder = function(ph, ctx) {
+      var name = ctx.mapper.toPublicName(ph.name);
+      return [new Tag(_PLACEHOLDER_TAG$1, {name: name})];
     };
-    _Visitor.prototype.serialize = function(nodes) {
+    _Visitor.prototype.serialize = function(nodes, ctx) {
       var _this = this;
       return (_a = []).concat.apply(_a, nodes.map(function(node) {
-        return node.visit(_this);
+        return node.visit(_this, ctx);
       }));
       var _a;
     };
@@ -6109,11 +6143,85 @@ var define = System.amdDefine;
     ExampleVisitor.prototype.visitDoctype = function(doctype) {};
     return ExampleVisitor;
   }());
+  var XmbPlaceholderMapper = (function() {
+    function XmbPlaceholderMapper(message) {
+      var _this = this;
+      this.internalToXmb = {};
+      this.xmbToNextId = {};
+      this.xmbToInternal = {};
+      message.nodes.forEach(function(node) {
+        return node.visit(_this);
+      });
+    }
+    XmbPlaceholderMapper.prototype.toPublicName = function(internalName) {
+      return this.internalToXmb.hasOwnProperty(internalName) ? this.internalToXmb[internalName] : null;
+    };
+    XmbPlaceholderMapper.prototype.toInternalName = function(publicName) {
+      return this.xmbToInternal.hasOwnProperty(publicName) ? this.xmbToInternal[publicName] : null;
+    };
+    XmbPlaceholderMapper.prototype.visitText = function(text, ctx) {
+      return null;
+    };
+    XmbPlaceholderMapper.prototype.visitContainer = function(container, ctx) {
+      var _this = this;
+      container.children.forEach(function(child) {
+        return child.visit(_this);
+      });
+    };
+    XmbPlaceholderMapper.prototype.visitIcu = function(icu, ctx) {
+      var _this = this;
+      Object.keys(icu.cases).forEach(function(k) {
+        icu.cases[k].visit(_this);
+      });
+    };
+    XmbPlaceholderMapper.prototype.visitTagPlaceholder = function(ph, ctx) {
+      var _this = this;
+      this.addPlaceholder(ph.startName);
+      ph.children.forEach(function(child) {
+        return child.visit(_this);
+      });
+      this.addPlaceholder(ph.closeName);
+    };
+    XmbPlaceholderMapper.prototype.visitPlaceholder = function(ph, ctx) {
+      this.addPlaceholder(ph.name);
+    };
+    XmbPlaceholderMapper.prototype.visitIcuPlaceholder = function(ph, ctx) {
+      this.addPlaceholder(ph.name);
+    };
+    XmbPlaceholderMapper.prototype.addPlaceholder = function(internalName) {
+      if (!internalName || this.internalToXmb.hasOwnProperty(internalName)) {
+        return;
+      }
+      var xmbName = internalName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+      if (this.xmbToInternal.hasOwnProperty(xmbName)) {
+        var nextId = this.xmbToNextId[xmbName];
+        this.xmbToNextId[xmbName] = nextId + 1;
+        xmbName = xmbName + "_" + nextId;
+      } else {
+        this.xmbToNextId[xmbName] = 1;
+      }
+      this.internalToXmb[internalName] = xmbName;
+      this.xmbToInternal[xmbName] = internalName;
+    };
+    return XmbPlaceholderMapper;
+  }());
+  var __extends$13 = (this && this.__extends) || function(d, b) {
+    for (var p in b)
+      if (b.hasOwnProperty(p))
+        d[p] = b[p];
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
   var _TRANSLATIONS_TAG = 'translationbundle';
   var _TRANSLATION_TAG = 'translation';
   var _PLACEHOLDER_TAG$2 = 'ph';
-  var Xtb = (function() {
-    function Xtb() {}
+  var Xtb = (function(_super) {
+    __extends$13(Xtb, _super);
+    function Xtb() {
+      _super.apply(this, arguments);
+    }
     Xtb.prototype.write = function(messages) {
       throw new Error('Unsupported');
     };
@@ -6139,8 +6247,11 @@ var define = System.amdDefine;
     Xtb.prototype.digest = function(message) {
       return digest$1(message);
     };
+    Xtb.prototype.createNameMapper = function(message) {
+      return new XmbPlaceholderMapper(message);
+    };
     return Xtb;
-  }());
+  }(Serializer));
   var XtbParser = (function() {
     function XtbParser() {}
     XtbParser.prototype.parse = function(xtb, url) {
@@ -6238,7 +6349,7 @@ var define = System.amdDefine;
     };
     return XmlToI18n;
   }());
-  var __extends$11 = (this && this.__extends) || function(d, b) {
+  var __extends$14 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -6264,7 +6375,7 @@ var define = System.amdDefine;
       return Reflect.metadata(k, v);
   };
   var HtmlParser = (function(_super) {
-    __extends$11(HtmlParser, _super);
+    __extends$14(HtmlParser, _super);
     function HtmlParser() {
       _super.call(this, getHtmlTagDefinition);
     }
@@ -6281,20 +6392,24 @@ var define = System.amdDefine;
     return HtmlParser;
   }(Parser$1));
   var TranslationBundle = (function() {
-    function TranslationBundle(_i18nNodesByMsgId, digest) {
+    function TranslationBundle(_i18nNodesByMsgId, digest, mapperFactory) {
       if (_i18nNodesByMsgId === void 0) {
         _i18nNodesByMsgId = {};
       }
       this._i18nNodesByMsgId = _i18nNodesByMsgId;
       this.digest = digest;
-      this._i18nToHtml = new I18nToHtmlVisitor(_i18nNodesByMsgId, digest);
+      this.mapperFactory = mapperFactory;
+      this._i18nToHtml = new I18nToHtmlVisitor(_i18nNodesByMsgId, digest, mapperFactory);
     }
     TranslationBundle.load = function(content, url, serializer) {
       var i18nNodesByMsgId = serializer.load(content, url);
       var digestFn = function(m) {
         return serializer.digest(m);
       };
-      return new TranslationBundle(i18nNodesByMsgId, digestFn);
+      var mapperFactory = function(m) {
+        return serializer.createNameMapper(m);
+      };
+      return new TranslationBundle(i18nNodesByMsgId, digestFn, mapperFactory);
     };
     TranslationBundle.prototype.get = function(srcMsg) {
       var html = this._i18nToHtml.convert(srcMsg);
@@ -6309,17 +6424,18 @@ var define = System.amdDefine;
     return TranslationBundle;
   }());
   var I18nToHtmlVisitor = (function() {
-    function I18nToHtmlVisitor(_i18nNodesByMsgId, _digest) {
+    function I18nToHtmlVisitor(_i18nNodesByMsgId, _digest, _mapperFactory) {
       if (_i18nNodesByMsgId === void 0) {
         _i18nNodesByMsgId = {};
       }
       this._i18nNodesByMsgId = _i18nNodesByMsgId;
       this._digest = _digest;
-      this._srcMsgStack = [];
+      this._mapperFactory = _mapperFactory;
+      this._contextStack = [];
       this._errors = [];
     }
     I18nToHtmlVisitor.prototype.convert = function(srcMsg) {
-      this._srcMsgStack.length = 0;
+      this._contextStack.length = 0;
       this._errors.length = 0;
       var text = this._convertToText(srcMsg);
       var url = srcMsg.nodes[0].sourceSpan.start.file.url;
@@ -6347,7 +6463,7 @@ var define = System.amdDefine;
       return "{" + exp + ", " + icu.type + ", " + cases.join(' ') + "}";
     };
     I18nToHtmlVisitor.prototype.visitPlaceholder = function(ph, context) {
-      var phName = ph.name;
+      var phName = this._mapper(ph.name);
       if (this._srcMsg.placeholders.hasOwnProperty(phName)) {
         return this._srcMsg.placeholders[phName];
       }
@@ -6366,14 +6482,23 @@ var define = System.amdDefine;
     I18nToHtmlVisitor.prototype._convertToText = function(srcMsg) {
       var _this = this;
       var digest = this._digest(srcMsg);
+      var mapper = this._mapperFactory ? this._mapperFactory(srcMsg) : null;
       if (this._i18nNodesByMsgId.hasOwnProperty(digest)) {
-        this._srcMsgStack.push(this._srcMsg);
+        this._contextStack.push({
+          msg: this._srcMsg,
+          mapper: this._mapper
+        });
         this._srcMsg = srcMsg;
+        this._mapper = function(name) {
+          return mapper ? mapper.toInternalName(name) : name;
+        };
         var nodes = this._i18nNodesByMsgId[digest];
         var text = nodes.map(function(node) {
           return node.visit(_this);
         }).join('');
-        this._srcMsg = this._srcMsgStack.pop();
+        var context = this._contextStack.pop();
+        this._srcMsg = context.msg;
+        this._mapper = context.mapper;
         return text;
       }
       this._addError(srcMsg.nodes[0], "Missing translation for message " + digest);
@@ -6833,7 +6958,7 @@ var define = System.amdDefine;
     var resolvedEnum = reflector.resolveEnum(resolveIdentifier(enumType), name);
     return {reference: resolvedEnum};
   }
-  var __extends$12 = (this && this.__extends) || function(d, b) {
+  var __extends$15 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -6856,7 +6981,7 @@ var define = System.amdDefine;
     return ExpansionResult;
   }());
   var ExpansionError = (function(_super) {
-    __extends$12(ExpansionError, _super);
+    __extends$15(ExpansionError, _super);
     function ExpansionError(span, errorMsg) {
       _super.call(this, span, errorMsg);
     }
@@ -6912,7 +7037,7 @@ var define = System.amdDefine;
     var switchAttr = new Attribute$1('[ngSwitch]', ast.switchValue, ast.switchValueSourceSpan);
     return new Element('ng-container', [switchAttr], children, ast.sourceSpan, ast.sourceSpan, ast.sourceSpan);
   }
-  var __extends$13 = (this && this.__extends) || function(d, b) {
+  var __extends$16 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -6922,7 +7047,7 @@ var define = System.amdDefine;
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var ProviderError = (function(_super) {
-    __extends$13(ProviderError, _super);
+    __extends$16(ProviderError, _super);
     function ProviderError(message, span) {
       _super.call(this, span, message);
     }
@@ -7030,7 +7155,7 @@ var define = System.amdDefine;
       var queries;
       while (currentEl !== null) {
         queries = currentEl._contentQueries.get(tokenReference(token));
-        if (isPresent(queries)) {
+        if (queries) {
           result.push.apply(result, queries.filter(function(query) {
             return query.descendants || distance <= 1;
           }));
@@ -7041,7 +7166,7 @@ var define = System.amdDefine;
         currentEl = currentEl._parent;
       }
       queries = this.viewContext.viewQueries.get(tokenReference(token));
-      if (isPresent(queries)) {
+      if (queries) {
         result.push.apply(result, queries);
       }
       return result;
@@ -7053,7 +7178,7 @@ var define = System.amdDefine;
         return null;
       }
       var transformedProviderAst = this._transformedProviders.get(tokenReference(token));
-      if (isPresent(transformedProviderAst)) {
+      if (transformedProviderAst) {
         return transformedProviderAst;
       }
       if (isPresent(this._seenProviders.get(tokenReference(token)))) {
@@ -7073,12 +7198,12 @@ var define = System.amdDefine;
             transformedUseExisting = null;
             transformedUseValue = existingDiDep.value;
           }
-        } else if (isPresent(provider.useFactory)) {
+        } else if (provider.useFactory) {
           var deps = provider.deps || provider.useFactory.diDeps;
           transformedDeps = deps.map(function(dep) {
             return _this._getDependency(resolvedProvider.providerType, dep, eager);
           });
-        } else if (isPresent(provider.useClass)) {
+        } else if (provider.useClass) {
           var deps = provider.deps || provider.useClass.diDeps;
           transformedDeps = deps.map(function(dep) {
             return _this._getDependency(resolvedProvider.providerType, dep, eager);
@@ -7144,7 +7269,7 @@ var define = System.amdDefine;
           };
         }
       } else {
-        while (!result && isPresent(currElement._parent)) {
+        while (!result && currElement._parent) {
           var prevElement = currElement;
           currElement = currElement._parent;
           if (prevElement._isViewRoot) {
@@ -7206,7 +7331,7 @@ var define = System.amdDefine;
         return null;
       }
       var transformedProviderAst = this._transformedProviders.get(tokenReference(token));
-      if (isPresent(transformedProviderAst)) {
+      if (transformedProviderAst) {
         return transformedProviderAst;
       }
       if (isPresent(this._seenProviders.get(tokenReference(token)))) {
@@ -7226,12 +7351,12 @@ var define = System.amdDefine;
             transformedUseExisting = null;
             transformedUseValue = existingDiDep.value;
           }
-        } else if (isPresent(provider.useFactory)) {
+        } else if (provider.useFactory) {
           var deps = provider.deps || provider.useFactory.diDeps;
           transformedDeps = deps.map(function(dep) {
             return _this._getDependency(dep, eager, resolvedProvider.sourceSpan);
           });
-        } else if (isPresent(provider.useClass)) {
+        } else if (provider.useClass) {
           var deps = provider.deps || provider.useClass.diDeps;
           transformedDeps = deps.map(function(dep) {
             return _this._getDependency(dep, eager, resolvedProvider.sourceSpan);
@@ -7336,7 +7461,7 @@ var define = System.amdDefine;
   }
   function _getViewQueries(component) {
     var viewQueries = new Map();
-    if (isPresent(component.viewQueries)) {
+    if (component.viewQueries) {
       component.viewQueries.forEach(function(query) {
         return _addQueryToTokenMap(viewQueries, query);
       });
@@ -7346,7 +7471,7 @@ var define = System.amdDefine;
   function _getContentQueries(directives) {
     var contentQueries = new Map();
     directives.forEach(function(directive) {
-      if (isPresent(directive.queries)) {
+      if (directive.queries) {
         directive.queries.forEach(function(query) {
           return _addQueryToTokenMap(contentQueries, query);
         });
@@ -7410,7 +7535,7 @@ var define = System.amdDefine;
   var CSS_IMPORT_REGEXP = /@import\s+(?:url\()?\s*(?:(?:['"]([^'"]*))|([^;\)\s]*))[^;]*;?/g;
   var CSS_COMMENT_REGEXP = /\/\*.+?\*\//g;
   var URL_WITH_SCHEMA_REGEXP = /^([^:/?#]+):/;
-  var __extends$14 = (this && this.__extends) || function(d, b) {
+  var __extends$17 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -7511,13 +7636,13 @@ var define = System.amdDefine;
         return this._exprParser.wrapLiteralPrimitive('ERROR', sourceInfo);
       }
     };
-    BindingParser.prototype.parseInlineTemplateBinding = function(name, prefixToken, value, sourceSpan, targetMatchableAttrs, targetProps, targetVars) {
+    BindingParser.prototype.parseInlineTemplateBinding = function(prefixToken, value, sourceSpan, targetMatchableAttrs, targetProps, targetVars) {
       var bindings = this._parseTemplateBindings(prefixToken, value, sourceSpan);
       for (var i = 0; i < bindings.length; i++) {
         var binding = bindings[i];
         if (binding.keyIsVar) {
           targetVars.push(new VariableAst(binding.key, binding.name, sourceSpan));
-        } else if (isPresent(binding.expression)) {
+        } else if (binding.expression) {
           this._parsePropertyAst(binding.key, binding.expression, sourceSpan, targetMatchableAttrs, targetProps);
         } else {
           targetMatchableAttrs.push([binding.key, '']);
@@ -7532,7 +7657,7 @@ var define = System.amdDefine;
         var bindingsResult = this._exprParser.parseTemplateBindings(prefixToken, value, sourceInfo);
         this._reportExpressionParserErrors(bindingsResult.errors, sourceSpan);
         bindingsResult.templateBindings.forEach(function(binding) {
-          if (isPresent(binding.expression)) {
+          if (binding.expression) {
             _this._checkPipes(binding.expression, sourceSpan);
           }
         });
@@ -7573,7 +7698,7 @@ var define = System.amdDefine;
     };
     BindingParser.prototype.parsePropertyInterpolation = function(name, value, sourceSpan, targetMatchableAttrs, targetProps) {
       var expr = this.parseInterpolation(value, sourceSpan);
-      if (isPresent(expr)) {
+      if (expr) {
         this._parsePropertyAst(name, expr, sourceSpan, targetMatchableAttrs, targetProps);
         return true;
       }
@@ -7709,7 +7834,7 @@ var define = System.amdDefine;
     };
     BindingParser.prototype._checkPipes = function(ast, sourceSpan) {
       var _this = this;
-      if (isPresent(ast)) {
+      if (ast) {
         var collector = new PipeCollector();
         ast.visit(collector);
         collector.pipes.forEach(function(ast, pipeName) {
@@ -7728,7 +7853,7 @@ var define = System.amdDefine;
     return BindingParser;
   }());
   var PipeCollector = (function(_super) {
-    __extends$14(PipeCollector, _super);
+    __extends$17(PipeCollector, _super);
     function PipeCollector() {
       _super.apply(this, arguments);
       this.pipes = new Map();
@@ -8065,7 +8190,7 @@ var define = System.amdDefine;
           templateBindingsSource = attr.value;
         } else if (normalizedName.startsWith(TEMPLATE_ATTR_PREFIX)) {
           templateBindingsSource = attr.value;
-          prefixToken = normalizedName.substring(TEMPLATE_ATTR_PREFIX.length);
+          prefixToken = normalizedName.substring(TEMPLATE_ATTR_PREFIX.length) + ':';
         }
         var hasTemplateBinding = isPresent(templateBindingsSource);
         if (hasTemplateBinding) {
@@ -8073,7 +8198,7 @@ var define = System.amdDefine;
             _this._reportError("Can't have multiple template bindings on one element. Use only one attribute named 'template' or prefixed with *", attr.sourceSpan);
           }
           hasInlineTemplates = true;
-          _this._bindingParser.parseInlineTemplateBinding(attr.name, prefixToken, templateBindingsSource, attr.sourceSpan, templateMatchableAttrs, templateElementOrDirectiveProps, templateElementVars);
+          _this._bindingParser.parseInlineTemplateBinding(prefixToken, templateBindingsSource, attr.sourceSpan, templateMatchableAttrs, templateElementOrDirectiveProps, templateElementVars);
         }
         if (!hasBinding && !hasTemplateBinding) {
           attrs.push(_this.visitAttribute(attr, null));
@@ -8583,7 +8708,7 @@ var define = System.amdDefine;
     ;
     return DefaultRenderTypes;
   }());
-  var __extends$16 = (this && this.__extends) || function(d, b) {
+  var __extends$19 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -8601,7 +8726,7 @@ var define = System.amdDefine;
     return AnimationAst;
   }());
   var AnimationStateAst = (function(_super) {
-    __extends$16(AnimationStateAst, _super);
+    __extends$19(AnimationStateAst, _super);
     function AnimationStateAst() {
       _super.apply(this, arguments);
     }
@@ -8609,7 +8734,7 @@ var define = System.amdDefine;
     return AnimationStateAst;
   }(AnimationAst));
   var AnimationEntryAst = (function(_super) {
-    __extends$16(AnimationEntryAst, _super);
+    __extends$19(AnimationEntryAst, _super);
     function AnimationEntryAst(name, stateDeclarations, stateTransitions) {
       _super.call(this);
       this.name = name;
@@ -8622,7 +8747,7 @@ var define = System.amdDefine;
     return AnimationEntryAst;
   }(AnimationAst));
   var AnimationStateDeclarationAst = (function(_super) {
-    __extends$16(AnimationStateDeclarationAst, _super);
+    __extends$19(AnimationStateDeclarationAst, _super);
     function AnimationStateDeclarationAst(stateName, styles) {
       _super.call(this);
       this.stateName = stateName;
@@ -8641,7 +8766,7 @@ var define = System.amdDefine;
     return AnimationStateTransitionExpression;
   }());
   var AnimationStateTransitionAst = (function(_super) {
-    __extends$16(AnimationStateTransitionAst, _super);
+    __extends$19(AnimationStateTransitionAst, _super);
     function AnimationStateTransitionAst(stateChanges, animation) {
       _super.call(this);
       this.stateChanges = stateChanges;
@@ -8653,7 +8778,7 @@ var define = System.amdDefine;
     return AnimationStateTransitionAst;
   }(AnimationStateAst));
   var AnimationStepAst = (function(_super) {
-    __extends$16(AnimationStepAst, _super);
+    __extends$19(AnimationStepAst, _super);
     function AnimationStepAst(startingStyles, keyframes, duration, delay, easing) {
       _super.call(this);
       this.startingStyles = startingStyles;
@@ -8668,7 +8793,7 @@ var define = System.amdDefine;
     return AnimationStepAst;
   }(AnimationAst));
   var AnimationStylesAst = (function(_super) {
-    __extends$16(AnimationStylesAst, _super);
+    __extends$19(AnimationStylesAst, _super);
     function AnimationStylesAst(styles) {
       _super.call(this);
       this.styles = styles;
@@ -8679,7 +8804,7 @@ var define = System.amdDefine;
     return AnimationStylesAst;
   }(AnimationAst));
   var AnimationKeyframeAst = (function(_super) {
-    __extends$16(AnimationKeyframeAst, _super);
+    __extends$19(AnimationKeyframeAst, _super);
     function AnimationKeyframeAst(offset, styles) {
       _super.call(this);
       this.offset = offset;
@@ -8691,7 +8816,7 @@ var define = System.amdDefine;
     return AnimationKeyframeAst;
   }(AnimationAst));
   var AnimationWithStepsAst = (function(_super) {
-    __extends$16(AnimationWithStepsAst, _super);
+    __extends$19(AnimationWithStepsAst, _super);
     function AnimationWithStepsAst(steps) {
       _super.call(this);
       this.steps = steps;
@@ -8699,7 +8824,7 @@ var define = System.amdDefine;
     return AnimationWithStepsAst;
   }(AnimationAst));
   var AnimationGroupAst = (function(_super) {
-    __extends$16(AnimationGroupAst, _super);
+    __extends$19(AnimationGroupAst, _super);
     function AnimationGroupAst(steps) {
       _super.call(this, steps);
     }
@@ -8709,7 +8834,7 @@ var define = System.amdDefine;
     return AnimationGroupAst;
   }(AnimationWithStepsAst));
   var AnimationSequenceAst = (function(_super) {
-    __extends$16(AnimationSequenceAst, _super);
+    __extends$19(AnimationSequenceAst, _super);
     function AnimationSequenceAst(steps) {
       _super.call(this, steps);
     }
@@ -8766,7 +8891,7 @@ var define = System.amdDefine;
     };
     return StylesCollection;
   }());
-  var __extends$15 = (this && this.__extends) || function(d, b) {
+  var __extends$18 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -8795,7 +8920,7 @@ var define = System.amdDefine;
   var _TERMINAL_KEYFRAME = 1;
   var _ONE_SECOND = 1000;
   var AnimationParseError = (function(_super) {
-    __extends$15(AnimationParseError, _super);
+    __extends$18(AnimationParseError, _super);
     function AnimationParseError(message) {
       _super.call(this, null, message);
     }
@@ -9841,7 +9966,7 @@ var define = System.amdDefine;
   function isDirectiveMetadata(type) {
     return type instanceof _angular_core.Directive;
   }
-  var __extends$17 = (this && this.__extends) || function(d, b) {
+  var __extends$20 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -9885,7 +10010,7 @@ var define = System.amdDefine;
   BuiltinTypeName[BuiltinTypeName.Function] = "Function";
   BuiltinTypeName[BuiltinTypeName.Null] = "Null";
   var BuiltinType = (function(_super) {
-    __extends$17(BuiltinType, _super);
+    __extends$20(BuiltinType, _super);
     function BuiltinType(name, modifiers) {
       if (modifiers === void 0) {
         modifiers = null;
@@ -9899,7 +10024,7 @@ var define = System.amdDefine;
     return BuiltinType;
   }(Type$1));
   var ExpressionType = (function(_super) {
-    __extends$17(ExpressionType, _super);
+    __extends$20(ExpressionType, _super);
     function ExpressionType(value, typeParams, modifiers) {
       if (typeParams === void 0) {
         typeParams = null;
@@ -9917,7 +10042,7 @@ var define = System.amdDefine;
     return ExpressionType;
   }(Type$1));
   var ArrayType = (function(_super) {
-    __extends$17(ArrayType, _super);
+    __extends$20(ArrayType, _super);
     function ArrayType(of, modifiers) {
       if (modifiers === void 0) {
         modifiers = null;
@@ -9931,7 +10056,7 @@ var define = System.amdDefine;
     return ArrayType;
   }(Type$1));
   var MapType = (function(_super) {
-    __extends$17(MapType, _super);
+    __extends$20(MapType, _super);
     function MapType(valueType, modifiers) {
       if (modifiers === void 0) {
         modifiers = null;
@@ -10080,7 +10205,7 @@ var define = System.amdDefine;
   BuiltinVar[BuiltinVar.CatchError] = "CatchError";
   BuiltinVar[BuiltinVar.CatchStack] = "CatchStack";
   var ReadVarExpr = (function(_super) {
-    __extends$17(ReadVarExpr, _super);
+    __extends$20(ReadVarExpr, _super);
     function ReadVarExpr(name, type) {
       if (type === void 0) {
         type = null;
@@ -10103,7 +10228,7 @@ var define = System.amdDefine;
     return ReadVarExpr;
   }(Expression));
   var WriteVarExpr = (function(_super) {
-    __extends$17(WriteVarExpr, _super);
+    __extends$20(WriteVarExpr, _super);
     function WriteVarExpr(name, value, type) {
       if (type === void 0) {
         type = null;
@@ -10127,7 +10252,7 @@ var define = System.amdDefine;
     return WriteVarExpr;
   }(Expression));
   var WriteKeyExpr = (function(_super) {
-    __extends$17(WriteKeyExpr, _super);
+    __extends$20(WriteKeyExpr, _super);
     function WriteKeyExpr(receiver, index, value, type) {
       if (type === void 0) {
         type = null;
@@ -10143,7 +10268,7 @@ var define = System.amdDefine;
     return WriteKeyExpr;
   }(Expression));
   var WritePropExpr = (function(_super) {
-    __extends$17(WritePropExpr, _super);
+    __extends$20(WritePropExpr, _super);
     function WritePropExpr(receiver, name, value, type) {
       if (type === void 0) {
         type = null;
@@ -10166,7 +10291,7 @@ var define = System.amdDefine;
   BuiltinMethod[BuiltinMethod.SubscribeObservable] = "SubscribeObservable";
   BuiltinMethod[BuiltinMethod.Bind] = "Bind";
   var InvokeMethodExpr = (function(_super) {
-    __extends$17(InvokeMethodExpr, _super);
+    __extends$20(InvokeMethodExpr, _super);
     function InvokeMethodExpr(receiver, method, args, type) {
       if (type === void 0) {
         type = null;
@@ -10188,7 +10313,7 @@ var define = System.amdDefine;
     return InvokeMethodExpr;
   }(Expression));
   var InvokeFunctionExpr = (function(_super) {
-    __extends$17(InvokeFunctionExpr, _super);
+    __extends$20(InvokeFunctionExpr, _super);
     function InvokeFunctionExpr(fn, args, type) {
       if (type === void 0) {
         type = null;
@@ -10203,7 +10328,7 @@ var define = System.amdDefine;
     return InvokeFunctionExpr;
   }(Expression));
   var InstantiateExpr = (function(_super) {
-    __extends$17(InstantiateExpr, _super);
+    __extends$20(InstantiateExpr, _super);
     function InstantiateExpr(classExpr, args, type) {
       _super.call(this, type);
       this.classExpr = classExpr;
@@ -10215,7 +10340,7 @@ var define = System.amdDefine;
     return InstantiateExpr;
   }(Expression));
   var LiteralExpr = (function(_super) {
-    __extends$17(LiteralExpr, _super);
+    __extends$20(LiteralExpr, _super);
     function LiteralExpr(value, type) {
       if (type === void 0) {
         type = null;
@@ -10229,7 +10354,7 @@ var define = System.amdDefine;
     return LiteralExpr;
   }(Expression));
   var ExternalExpr = (function(_super) {
-    __extends$17(ExternalExpr, _super);
+    __extends$20(ExternalExpr, _super);
     function ExternalExpr(value, type, typeParams) {
       if (type === void 0) {
         type = null;
@@ -10247,7 +10372,7 @@ var define = System.amdDefine;
     return ExternalExpr;
   }(Expression));
   var ConditionalExpr = (function(_super) {
-    __extends$17(ConditionalExpr, _super);
+    __extends$20(ConditionalExpr, _super);
     function ConditionalExpr(condition, trueCase, falseCase, type) {
       if (falseCase === void 0) {
         falseCase = null;
@@ -10266,7 +10391,7 @@ var define = System.amdDefine;
     return ConditionalExpr;
   }(Expression));
   var NotExpr = (function(_super) {
-    __extends$17(NotExpr, _super);
+    __extends$20(NotExpr, _super);
     function NotExpr(condition) {
       _super.call(this, BOOL_TYPE);
       this.condition = condition;
@@ -10277,7 +10402,7 @@ var define = System.amdDefine;
     return NotExpr;
   }(Expression));
   var CastExpr = (function(_super) {
-    __extends$17(CastExpr, _super);
+    __extends$20(CastExpr, _super);
     function CastExpr(value, type) {
       _super.call(this, type);
       this.value = value;
@@ -10298,7 +10423,7 @@ var define = System.amdDefine;
     return FnParam;
   }());
   var FunctionExpr = (function(_super) {
-    __extends$17(FunctionExpr, _super);
+    __extends$20(FunctionExpr, _super);
     function FunctionExpr(params, statements, type) {
       if (type === void 0) {
         type = null;
@@ -10319,7 +10444,7 @@ var define = System.amdDefine;
     return FunctionExpr;
   }(Expression));
   var BinaryOperatorExpr = (function(_super) {
-    __extends$17(BinaryOperatorExpr, _super);
+    __extends$20(BinaryOperatorExpr, _super);
     function BinaryOperatorExpr(operator, lhs, rhs, type) {
       if (type === void 0) {
         type = null;
@@ -10335,7 +10460,7 @@ var define = System.amdDefine;
     return BinaryOperatorExpr;
   }(Expression));
   var ReadPropExpr = (function(_super) {
-    __extends$17(ReadPropExpr, _super);
+    __extends$20(ReadPropExpr, _super);
     function ReadPropExpr(receiver, name, type) {
       if (type === void 0) {
         type = null;
@@ -10353,7 +10478,7 @@ var define = System.amdDefine;
     return ReadPropExpr;
   }(Expression));
   var ReadKeyExpr = (function(_super) {
-    __extends$17(ReadKeyExpr, _super);
+    __extends$20(ReadKeyExpr, _super);
     function ReadKeyExpr(receiver, index, type) {
       if (type === void 0) {
         type = null;
@@ -10371,7 +10496,7 @@ var define = System.amdDefine;
     return ReadKeyExpr;
   }(Expression));
   var LiteralArrayExpr = (function(_super) {
-    __extends$17(LiteralArrayExpr, _super);
+    __extends$20(LiteralArrayExpr, _super);
     function LiteralArrayExpr(entries, type) {
       if (type === void 0) {
         type = null;
@@ -10396,7 +10521,7 @@ var define = System.amdDefine;
     return LiteralMapEntry;
   }());
   var LiteralMapExpr = (function(_super) {
-    __extends$17(LiteralMapExpr, _super);
+    __extends$20(LiteralMapExpr, _super);
     function LiteralMapExpr(entries, type) {
       if (type === void 0) {
         type = null;
@@ -10441,7 +10566,7 @@ var define = System.amdDefine;
     return Statement;
   }());
   var DeclareVarStmt = (function(_super) {
-    __extends$17(DeclareVarStmt, _super);
+    __extends$20(DeclareVarStmt, _super);
     function DeclareVarStmt(name, value, type, modifiers) {
       if (type === void 0) {
         type = null;
@@ -10460,7 +10585,7 @@ var define = System.amdDefine;
     return DeclareVarStmt;
   }(Statement));
   var DeclareFunctionStmt = (function(_super) {
-    __extends$17(DeclareFunctionStmt, _super);
+    __extends$20(DeclareFunctionStmt, _super);
     function DeclareFunctionStmt(name, params, statements, type, modifiers) {
       if (type === void 0) {
         type = null;
@@ -10480,7 +10605,7 @@ var define = System.amdDefine;
     return DeclareFunctionStmt;
   }(Statement));
   var ExpressionStatement = (function(_super) {
-    __extends$17(ExpressionStatement, _super);
+    __extends$20(ExpressionStatement, _super);
     function ExpressionStatement(expr) {
       _super.call(this);
       this.expr = expr;
@@ -10491,7 +10616,7 @@ var define = System.amdDefine;
     return ExpressionStatement;
   }(Statement));
   var ReturnStatement = (function(_super) {
-    __extends$17(ReturnStatement, _super);
+    __extends$20(ReturnStatement, _super);
     function ReturnStatement(value) {
       _super.call(this);
       this.value = value;
@@ -10518,7 +10643,7 @@ var define = System.amdDefine;
     return AbstractClassPart;
   }());
   var ClassField = (function(_super) {
-    __extends$17(ClassField, _super);
+    __extends$20(ClassField, _super);
     function ClassField(name, type, modifiers) {
       if (type === void 0) {
         type = null;
@@ -10532,7 +10657,7 @@ var define = System.amdDefine;
     return ClassField;
   }(AbstractClassPart));
   var ClassMethod = (function(_super) {
-    __extends$17(ClassMethod, _super);
+    __extends$20(ClassMethod, _super);
     function ClassMethod(name, params, body, type, modifiers) {
       if (type === void 0) {
         type = null;
@@ -10548,7 +10673,7 @@ var define = System.amdDefine;
     return ClassMethod;
   }(AbstractClassPart));
   var ClassGetter = (function(_super) {
-    __extends$17(ClassGetter, _super);
+    __extends$20(ClassGetter, _super);
     function ClassGetter(name, body, type, modifiers) {
       if (type === void 0) {
         type = null;
@@ -10563,7 +10688,7 @@ var define = System.amdDefine;
     return ClassGetter;
   }(AbstractClassPart));
   var ClassStmt = (function(_super) {
-    __extends$17(ClassStmt, _super);
+    __extends$20(ClassStmt, _super);
     function ClassStmt(name, parent, fields, getters, constructorMethod, methods, modifiers) {
       if (modifiers === void 0) {
         modifiers = null;
@@ -10582,7 +10707,7 @@ var define = System.amdDefine;
     return ClassStmt;
   }(Statement));
   var IfStmt = (function(_super) {
-    __extends$17(IfStmt, _super);
+    __extends$20(IfStmt, _super);
     function IfStmt(condition, trueCase, falseCase) {
       if (falseCase === void 0) {
         falseCase = [];
@@ -10598,7 +10723,7 @@ var define = System.amdDefine;
     return IfStmt;
   }(Statement));
   var CommentStmt = (function(_super) {
-    __extends$17(CommentStmt, _super);
+    __extends$20(CommentStmt, _super);
     function CommentStmt(comment) {
       _super.call(this);
       this.comment = comment;
@@ -10609,7 +10734,7 @@ var define = System.amdDefine;
     return CommentStmt;
   }(Statement));
   var TryCatchStmt = (function(_super) {
-    __extends$17(TryCatchStmt, _super);
+    __extends$20(TryCatchStmt, _super);
     function TryCatchStmt(bodyStmts, catchStmts) {
       _super.call(this);
       this.bodyStmts = bodyStmts;
@@ -10621,7 +10746,7 @@ var define = System.amdDefine;
     return TryCatchStmt;
   }(Statement));
   var ThrowStmt = (function(_super) {
-    __extends$17(ThrowStmt, _super);
+    __extends$20(ThrowStmt, _super);
     function ThrowStmt(error) {
       _super.call(this);
       this.error = error;
@@ -10871,7 +10996,7 @@ var define = System.amdDefine;
     return expression.visitExpression(transformer, null);
   }
   var _ReplaceVariableTransformer = (function(_super) {
-    __extends$17(_ReplaceVariableTransformer, _super);
+    __extends$20(_ReplaceVariableTransformer, _super);
     function _ReplaceVariableTransformer(_varName, _newValue) {
       _super.call(this);
       this._varName = _varName;
@@ -10888,7 +11013,7 @@ var define = System.amdDefine;
     return finder.varNames;
   }
   var _VariableFinder = (function(_super) {
-    __extends$17(_VariableFinder, _super);
+    __extends$20(_VariableFinder, _super);
     function _VariableFinder() {
       _super.apply(this, arguments);
       this.varNames = new Set();
@@ -11276,7 +11401,7 @@ var define = System.amdDefine;
         var receiver = this.visit(ast.receiver, _Mode.Expression);
         if (receiver === this._implicitReceiver) {
           var varExpr = this._getLocal(ast.name);
-          if (isPresent(varExpr)) {
+          if (varExpr) {
             result = varExpr.callFn(args);
           }
         }
@@ -11309,7 +11434,7 @@ var define = System.amdDefine;
       var receiver = this.visit(ast.receiver, _Mode.Expression);
       if (receiver === this._implicitReceiver) {
         var varExpr = this._getLocal(ast.name);
-        if (isPresent(varExpr)) {
+        if (varExpr) {
           throw new Error('Cannot assign to a reference or variable!');
         }
       }
@@ -12029,7 +12154,7 @@ var define = System.amdDefine;
         throwIfNotFound = true;
       }
       var ngModuleMeta = ListWrapper.findLast(this._reflector.annotations(type), _isNgModuleMetadata);
-      if (isPresent(ngModuleMeta)) {
+      if (ngModuleMeta) {
         return ngModuleMeta;
       } else {
         if (throwIfNotFound) {
@@ -12076,9 +12201,9 @@ var define = System.amdDefine;
         throwIfNotFound = true;
       }
       var metas = this._reflector.annotations(_angular_core.resolveForwardRef(type));
-      if (isPresent(metas)) {
+      if (metas) {
         var annotation = ListWrapper.findLast(metas, _isPipeMetadata);
-        if (isPresent(annotation)) {
+        if (annotation) {
           return annotation;
         }
       }
@@ -12118,7 +12243,7 @@ var define = System.amdDefine;
     SummaryResolver = __decorate$12([CompilerInjectable(), __metadata$12('design:paramtypes', [])], SummaryResolver);
     return SummaryResolver;
   }());
-  var __extends$18 = (this && this.__extends) || function(d, b) {
+  var __extends$21 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -12965,7 +13090,7 @@ var define = System.amdDefine;
     visitValue(value, new _CompileValueConverter(), targetIdentifiers);
   }
   var _CompileValueConverter = (function(_super) {
-    __extends$18(_CompileValueConverter, _super);
+    __extends$21(_CompileValueConverter, _super);
     function _CompileValueConverter() {
       _super.apply(this, arguments);
     }
@@ -13640,7 +13765,7 @@ var define = System.amdDefine;
     }
     return res;
   }
-  var __extends$19 = (this && this.__extends) || function(d, b) {
+  var __extends$22 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -13686,7 +13811,7 @@ var define = System.amdDefine;
     return TypeScriptEmitter;
   }());
   var _TsEmitterVisitor = (function(_super) {
-    __extends$19(_TsEmitterVisitor, _super);
+    __extends$22(_TsEmitterVisitor, _super);
     function _TsEmitterVisitor(_moduleUrl) {
       _super.call(this, false);
       this._moduleUrl = _moduleUrl;
@@ -13982,7 +14107,7 @@ var define = System.amdDefine;
   registerContext(_angular_core.SecurityContext.STYLE, ['*|style']);
   registerContext(_angular_core.SecurityContext.URL, ['*|formAction', 'area|href', 'area|ping', 'audio|src', 'a|href', 'a|ping', 'blockquote|cite', 'body|background', 'del|cite', 'form|action', 'img|src', 'img|srcset', 'input|src', 'ins|cite', 'q|cite', 'source|src', 'source|srcset', 'track|src', 'video|poster', 'video|src']);
   registerContext(_angular_core.SecurityContext.RESOURCE_URL, ['applet|code', 'applet|codebase', 'base|href', 'embed|src', 'frame|src', 'head|profile', 'html|manifest', 'iframe|src', 'link|href', 'media|src', 'object|codebase', 'object|data', 'script|src']);
-  var __extends$20 = (this && this.__extends) || function(d, b) {
+  var __extends$23 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -14021,7 +14146,7 @@ var define = System.amdDefine;
     'tabindex': 'tabIndex'
   };
   var DomElementSchemaRegistry = (function(_super) {
-    __extends$20(DomElementSchemaRegistry, _super);
+    __extends$23(DomElementSchemaRegistry, _super);
     function DomElementSchemaRegistry() {
       var _this = this;
       _super.call(this);
@@ -14650,7 +14775,7 @@ var define = System.amdDefine;
     CompileMethod.prototype._updateDebugContextIfNeeded = function() {
       if (this._newState.nodeIndex !== this._currState.nodeIndex || this._newState.sourceAst !== this._currState.sourceAst) {
         var expr = this._updateDebugContext(this._newState);
-        if (isPresent(expr)) {
+        if (expr) {
           this._bodyStatements.push(expr.toStmt());
         }
       }
@@ -14658,8 +14783,8 @@ var define = System.amdDefine;
     CompileMethod.prototype._updateDebugContext = function(newState) {
       this._currState = this._newState = newState;
       if (this._debugEnabled) {
-        var sourceLocation = isPresent(newState.sourceAst) ? newState.sourceAst.sourceSpan.start : null;
-        return THIS_EXPR.callMethod('debug', [literal(newState.nodeIndex), isPresent(sourceLocation) ? literal(sourceLocation.line) : NULL_EXPR, isPresent(sourceLocation) ? literal(sourceLocation.col) : NULL_EXPR]);
+        var sourceLocation = newState.sourceAst ? newState.sourceAst.sourceSpan.start : null;
+        return THIS_EXPR.callMethod('debug', [literal(newState.nodeIndex), sourceLocation ? literal(sourceLocation.line) : NULL_EXPR, sourceLocation ? literal(sourceLocation.col) : NULL_EXPR]);
       } else {
         return null;
       }
@@ -14695,7 +14820,7 @@ var define = System.amdDefine;
     };
     return CompileMethod;
   }());
-  var __extends$22 = (this && this.__extends) || function(d, b) {
+  var __extends$25 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -14710,7 +14835,7 @@ var define = System.amdDefine;
     } else {
       var viewProp = THIS_EXPR;
       var currView = callingView;
-      while (currView !== definedView && isPresent(currView.declarationElement.view)) {
+      while (currView !== definedView && currView.declarationElement.view) {
         currView = currView.declarationElement.view;
         viewProp = viewProp.prop('parentView');
       }
@@ -14721,7 +14846,7 @@ var define = System.amdDefine;
     }
   }
   var _ReplaceViewTransformer = (function(_super) {
-    __extends$22(_ReplaceViewTransformer, _super);
+    __extends$25(_ReplaceViewTransformer, _super);
     function _ReplaceViewTransformer(_viewExpr, _view) {
       _super.call(this);
       this._viewExpr = _viewExpr;
@@ -14784,7 +14909,7 @@ var define = System.amdDefine;
     CompileQuery.prototype.addValue = function(value, view) {
       var currentView = view;
       var elPath = [];
-      while (isPresent(currentView) && currentView !== this.view) {
+      while (currentView && currentView !== this.view) {
         var parentEl = currentView.declarationElement;
         elPath.unshift(parentEl);
         currentView = parentEl.view;
@@ -14814,7 +14939,7 @@ var define = System.amdDefine;
     CompileQuery.prototype.generateStatements = function(targetStaticMethod, targetDynamicMethod) {
       var values = createQueryValues(this._values);
       var updateStmts = [this.queryList.callMethod('reset', [literalArr(values)]).toStmt()];
-      if (isPresent(this.ownerDirectiveExpression)) {
+      if (this.ownerDirectiveExpression) {
         var valueExpr = this.meta.first ? this.queryList.prop('first') : this.queryList;
         updateStmts.push(this.ownerDirectiveExpression.prop(this.meta.propertyName).set(valueExpr).toStmt());
       }
@@ -14844,7 +14969,7 @@ var define = System.amdDefine;
     });
     return viewContainer.callMethod('mapNestedViews', [variable(view.className), fn([new FnParam('nestedView', view.classType)], [new ReturnStatement(literalArr(adjustedExpressions))], DYNAMIC_TYPE)]);
   }
-  function createQueryList(query, directiveInstance, propertyName, compileView) {
+  function createQueryList(propertyName, compileView) {
     compileView.fields.push(new ClassField(propertyName, importType(createIdentifier(Identifiers.QueryList), [DYNAMIC_TYPE])));
     var expr = THIS_EXPR.prop(propertyName);
     compileView.createMethod.addStmt(THIS_EXPR.prop(propertyName).set(importExpr(createIdentifier(Identifiers.QueryList), [DYNAMIC_TYPE]).instantiate([])).toStmt());
@@ -14932,7 +15057,7 @@ var define = System.amdDefine;
     }
     return DirectiveWrapperDependency;
   }());
-  var __extends$21 = (this && this.__extends) || function(d, b) {
+  var __extends$24 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -14958,7 +15083,7 @@ var define = System.amdDefine;
     return CompileNode;
   }());
   var CompileElement = (function(_super) {
-    __extends$21(CompileElement, _super);
+    __extends$24(CompileElement, _super);
     function CompileElement(parent, view, nodeIndex, renderNode, sourceAst, component, _directives, _resolvedProvidersArray, hasViewContainer, hasEmbeddedView, references) {
       var _this = this;
       _super.call(this, parent, view, nodeIndex, renderNode, sourceAst);
@@ -15075,7 +15200,7 @@ var define = System.amdDefine;
           }
         });
         var propName = "_" + tokenName(resolvedProvider.token) + "_" + _this.nodeIndex + "_" + _this.instances.size;
-        var instance = createProviderProperty(propName, resolvedProvider, providerValueExpressions, resolvedProvider.multiProvider, resolvedProvider.eager, _this);
+        var instance = createProviderProperty(propName, providerValueExpressions, resolvedProvider.multiProvider, resolvedProvider.eager, _this);
         if (isDirectiveWrapper) {
           _this.directiveWrapperInstance.set(tokenReference(resolvedProvider.token), instance);
           _this.instances.set(tokenReference(resolvedProvider.token), DirectiveWrapperExpressions.context(instance));
@@ -15157,7 +15282,7 @@ var define = System.amdDefine;
     };
     CompileElement.prototype._addQuery = function(queryMeta, directiveInstance) {
       var propName = "_query_" + tokenName(queryMeta.selectors[0]) + "_" + this.nodeIndex + "_" + this._queryCount++;
-      var queryList = createQueryList(queryMeta, directiveInstance, propName, this.view);
+      var queryList = createQueryList(propName, this.view);
       var query = new CompileQuery(queryMeta, queryList, directiveInstance, this.view);
       addQueryToTokenMap(this._queries, query);
       return query;
@@ -15216,7 +15341,7 @@ var define = System.amdDefine;
     }
     return new IfStmt(InjectMethodVars$1.token.identical(createDiTokenExpression(provider.token)).and(indexCondition), [new ReturnStatement(providerExpr)]);
   }
-  function createProviderProperty(propName, provider, providerValueExpressions, isMulti, isEager, compileElement) {
+  function createProviderProperty(propName, providerValueExpressions, isMulti, isEager, compileElement) {
     var view = compileElement.view;
     var resolvedProviderValueExpr;
     var type;
@@ -15384,7 +15509,7 @@ var define = System.amdDefine;
         var directiveInstance_1 = THIS_EXPR.prop('context');
         this.component.viewQueries.forEach(function(queryMeta, queryIndex) {
           var propName = "_viewQuery_" + tokenName(queryMeta.selectors[0]) + "_" + queryIndex;
-          var queryList = createQueryList(queryMeta, directiveInstance_1, propName, _this);
+          var queryList = createQueryList(propName, _this);
           var query = new CompileQuery(queryMeta, queryList, directiveInstance_1, _this);
           addQueryToTokenMap(viewQueries, query);
         });
@@ -15643,7 +15768,6 @@ var define = System.amdDefine;
       }));
     });
     Object.keys(ce.referenceTokens).forEach(function(varName) {
-      var token = ce.referenceTokens[varName];
       var varToken = {value: varName};
       queriesWithReads.push.apply(queriesWithReads, ce.getQueriesFor(varToken).map(function(query) {
         return new _QueryWithRead(query, varToken);
@@ -16027,7 +16151,7 @@ var define = System.amdDefine;
       }
       targetStatements.push(renderCompTypeVar.set(importExpr(createIdentifier(Identifiers.createRenderComponentType)).callFn([view.genConfig.genDebugInfo ? literal(templateUrlInfo) : literal(''), literal(view.component.template.ngContentSelectors.length), ViewEncapsulationEnum.fromValue(view.component.template.encapsulation), view.styles, literalMap(view.animations.map(function(entry) {
         return [entry.name, entry.fnExp];
-      }))])).toDeclStmt(importType(createIdentifier(Identifiers.RenderComponentType))));
+      }), null, true)])).toDeclStmt(importType(createIdentifier(Identifiers.RenderComponentType))));
     }
     var viewClass = createViewClass(view, renderCompTypeVar, nodeDebugInfosVar);
     targetStatements.push(viewClass);
@@ -16204,7 +16328,6 @@ var define = System.amdDefine;
     view.nodes.forEach(function(node) {
       if (node instanceof CompileElement) {
         if (node.embeddedView) {
-          var parentNodeIndex = node.isRootElement() ? null : node.parent.nodeIndex;
           stmts.push(new IfStmt(nodeIndexVar.equals(literal(node.nodeIndex)), [new ReturnStatement(node.embeddedView.classExpr.instantiate([ViewProperties.viewUtils, THIS_EXPR, literal(node.nodeIndex), node.renderNode, node.viewContainer]))]));
         }
       }
@@ -16506,7 +16629,7 @@ var define = System.amdDefine;
     }
     return GeneratedFile;
   }());
-  var __extends$23 = (this && this.__extends) || function(d, b) {
+  var __extends$26 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -16517,7 +16640,7 @@ var define = System.amdDefine;
   };
   var STRIP_SRC_FILE_SUFFIXES = /(\.ts|\.d\.ts|\.js|\.jsx|\.tsx)$/;
   function serializeSummaries(host, summaryResolver, symbolResolver, symbols, types) {
-    var serializer = new Serializer(host);
+    var serializer = new Serializer$1(host);
     symbols.forEach(function(resolvedSymbol) {
       return serializer.addOrMergeSummary({
         symbol: resolvedSymbol.symbol,
@@ -16568,8 +16691,8 @@ var define = System.amdDefine;
     var fileNameWithoutSuffix = fileName.replace(STRIP_SRC_FILE_SUFFIXES, '');
     return fileNameWithoutSuffix + ".ngsummary.json";
   }
-  var Serializer = (function(_super) {
-    __extends$23(Serializer, _super);
+  var Serializer$1 = (function(_super) {
+    __extends$26(Serializer, _super);
     function Serializer(host) {
       _super.call(this);
       this.host = host;
@@ -16629,7 +16752,7 @@ var define = System.amdDefine;
     return Serializer;
   }(ValueTransformer));
   var Deserializer = (function(_super) {
-    __extends$23(Deserializer, _super);
+    __extends$26(Deserializer, _super);
     function Deserializer(symbolCache) {
       _super.call(this);
       this.symbolCache = symbolCache;
@@ -17030,7 +17153,7 @@ var define = System.amdDefine;
   function isStaticType(type) {
     return typeof type === 'object' && type.name && type.filePath;
   }
-  var __extends$24 = (this && this.__extends) || function(d, b) {
+  var __extends$27 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -17302,6 +17425,9 @@ var define = System.amdDefine;
               if (value_1 && (depth != 0 || value_1.__symbolic != 'error')) {
                 var parameters = targetFunction['parameters'];
                 var defaults = targetFunction.defaults;
+                args = args.map(function(arg) {
+                  return simplifyInContext(context, arg, depth + 1);
+                });
                 if (defaults && defaults.length > args.length) {
                   args.push.apply(args, defaults.slice(args.length).map(function(value) {
                     return simplify(value);
@@ -17489,15 +17615,15 @@ var define = System.amdDefine;
                       return context;
                     }
                     var argExpressions = expression['arguments'] || [];
-                    var args = argExpressions.map(function(arg) {
-                      return simplifyInContext(context, arg, depth + 1);
-                    });
                     var converter = self.conversionMap.get(staticSymbol);
                     if (converter) {
+                      var args = argExpressions.map(function(arg) {
+                        return simplifyInContext(context, arg, depth + 1);
+                      });
                       return converter(context, args);
                     } else {
                       var targetFunction = resolveReferenceValue(staticSymbol);
-                      return simplifyCall(staticSymbol, targetFunction, args);
+                      return simplifyCall(staticSymbol, targetFunction, argExpressions);
                     }
                   }
                   break;
@@ -17622,7 +17748,7 @@ var define = System.amdDefine;
     return BindingScope;
   }());
   var PopulatedScope = (function(_super) {
-    __extends$24(PopulatedScope, _super);
+    __extends$27(PopulatedScope, _super);
     function PopulatedScope(bindings) {
       _super.call(this);
       this.bindings = bindings;
@@ -17642,7 +17768,7 @@ var define = System.amdDefine;
     ((result)).column = column;
     return result;
   }
-  var __extends$25 = (this && this.__extends) || function(d, b) {
+  var __extends$28 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -17779,7 +17905,7 @@ var define = System.amdDefine;
     StaticSymbolResolver.prototype.createResolvedSymbol = function(sourceSymbol, metadata) {
       var self = this;
       var ReferenceTransformer = (function(_super) {
-        __extends$25(ReferenceTransformer, _super);
+        __extends$28(ReferenceTransformer, _super);
         function ReferenceTransformer() {
           _super.apply(this, arguments);
         }
@@ -18306,7 +18432,7 @@ var define = System.amdDefine;
   }
   var CATCH_ERROR_VAR$2 = 'error';
   var CATCH_STACK_VAR$2 = 'stack';
-  var __extends$27 = (this && this.__extends) || function(d, b) {
+  var __extends$30 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -18316,7 +18442,7 @@ var define = System.amdDefine;
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var AbstractJsEmitterVisitor = (function(_super) {
-    __extends$27(AbstractJsEmitterVisitor, _super);
+    __extends$30(AbstractJsEmitterVisitor, _super);
     function AbstractJsEmitterVisitor() {
       _super.call(this, false);
     }
@@ -18468,7 +18594,7 @@ var define = System.amdDefine;
     };
     return AbstractJsEmitterVisitor;
   }(AbstractEmitterVisitor));
-  var __extends$26 = (this && this.__extends) || function(d, b) {
+  var __extends$29 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -18494,7 +18620,7 @@ var define = System.amdDefine;
     return evalExpression(sourceUrl, resultVar, ctx.toSource(), converter.getArgs());
   }
   var JitEmitterVisitor = (function(_super) {
-    __extends$26(JitEmitterVisitor, _super);
+    __extends$29(JitEmitterVisitor, _super);
     function JitEmitterVisitor() {
       _super.apply(this, arguments);
       this._evalArgNames = [];
@@ -18914,7 +19040,6 @@ var define = System.amdDefine;
       var _this = this;
       var programSymbols = extractProgramSymbols(this.staticSymbolResolver, rootFiles, this.host);
       var _a = analyzeAndValidateNgModules(programSymbols, this.host, this.metadataResolver),
-          ngModuleByPipeOrDirective = _a.ngModuleByPipeOrDirective,
           files = _a.files,
           ngModules = _a.ngModules;
       return Promise.all(ngModules.map(function(ngModule) {
@@ -19181,6 +19306,7 @@ var define = System.amdDefine;
   exports.Extractor = Extractor;
   exports.I18NHtmlParser = I18NHtmlParser;
   exports.MessageBundle = MessageBundle;
+  exports.Serializer = Serializer;
   exports.Xliff = Xliff;
   exports.Xmb = Xmb;
   exports.Xtb = Xtb;
@@ -19338,7 +19464,7 @@ var define = System.amdDefine;
     INTERNAL_BROWSER_DYNAMIC_PLATFORM_PROVIDERS: INTERNAL_BROWSER_DYNAMIC_PLATFORM_PROVIDERS,
     ResourceLoaderImpl: ResourceLoaderImpl
   };
-  var VERSION = new _angular_core.Version('2.4.2');
+  var VERSION = new _angular_core.Version('2.4.5');
   var RESOURCE_CACHE_PROVIDER = [{
     provide: _angular_compiler.ResourceLoader,
     useClass: CachedResourceLoader
@@ -19354,8 +19480,7 @@ var define = System.amdDefine;
 System.registerDynamic("dist/public/app/app.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19375,14 +19500,11 @@ System.registerDynamic("dist/public/app/app.component.js", ["tslib", "@angular/c
     exports.AppComponent = AppComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/admin/admin.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19399,14 +19521,11 @@ System.registerDynamic("dist/public/app/admin/admin.component.js", ["tslib", "@a
     exports.AdminComponent = AdminComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/home/home.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19429,14 +19548,11 @@ System.registerDynamic("dist/public/app/home/home.component.js", ["tslib", "@ang
     exports.HomeComponent = HomeComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/login/login-recruiter.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19454,14 +19570,11 @@ System.registerDynamic("dist/public/app/login/login-recruiter.component.js", ["t
     exports.LoginRecruiterComponent = LoginRecruiterComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19479,14 +19592,11 @@ System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["t
     exports.LoginCandidateComponent = LoginCandidateComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19533,14 +19643,11 @@ System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", 
     exports.JobEditComponent = JobEditComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/modals/modal-yesno.component.js", ["tslib", "@angular/core", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19566,14 +19673,11 @@ System.registerDynamic("dist/public/app/modals/modal-yesno.component.js", ["tsli
     exports.ModalYesNoComponent = ModalYesNoComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/modals/modal-ok.component.js", ["tslib", "@angular/core", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -19597,8 +19701,6 @@ System.registerDynamic("dist/public/app/modals/modal-ok.component.js", ["tslib",
     exports.ModalOkComponent = ModalOkComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/let.js", [], true, function ($__require, exports, module) {
   "use strict";
@@ -19609,36 +19711,29 @@ System.registerDynamic("npm:rxjs/operator/let.js", [], true, function ($__requir
    * @owner Observable
    */
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   function letProto(func) {
     return func(this);
   }
   exports.letProto = letProto;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/let.js', ['../../Observable', '../../operator/let'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var let_1 = $__require('../../operator/let');
   Observable_1.Observable.prototype.let = let_1.letProto;
   Observable_1.Observable.prototype.letBind = let_1.letProto;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/observable/FromEventObservable.js', ['../Observable', '../util/tryCatch', '../util/isFunction', '../util/errorObject', '../Subscription'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -19784,33 +19879,25 @@ System.registerDynamic('npm:rxjs/observable/FromEventObservable.js', ['../Observ
     }(Observable_1.Observable);
     exports.FromEventObservable = FromEventObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/fromEvent.js", ["./FromEventObservable"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var FromEventObservable_1 = $__require("./FromEventObservable");
+  var FromEventObservable_1 = $__require('./FromEventObservable');
   exports.fromEvent = FromEventObservable_1.FromEventObservable.create;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/observable/fromEvent.js', ['../../Observable', '../../observable/fromEvent'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var fromEvent_1 = $__require('../../observable/fromEvent');
   Observable_1.Observable.fromEvent = fromEvent_1.fromEvent;
   
-
-  return module.exports;
 });
 (function() {
 var define = System.amdDefine;
@@ -23392,7 +23479,7 @@ var define = System.amdDefine;
     };
     return FormBuilder;
   }());
-  var VERSION = new _angular_core.Version('2.4.2');
+  var VERSION = new _angular_core.Version('2.4.5');
   var SHARED_FORM_DIRECTIVES = [NgSelectOption, NgSelectMultipleOption, DefaultValueAccessor, NumberValueAccessor, RangeValueAccessor, CheckboxControlValueAccessor, SelectControlValueAccessor, SelectMultipleControlValueAccessor, RadioControlValueAccessor, NgControlStatus, NgControlStatusGroup, RequiredValidator, MinLengthValidator, MaxLengthValidator, PatternValidator, CheckboxRequiredValidator];
   var TEMPLATE_DRIVEN_DIRECTIVES = [NgModel, NgModelGroup, NgForm];
   var REACTIVE_DRIVEN_DIRECTIVES = [FormControlDirective, FormGroupDirective, FormControlName, FormGroupName, FormArrayName];
@@ -28403,8 +28490,7 @@ var define = System.amdDefine;
 System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib", "@angular/core", "../job.service", "../modals/modal-yesno.component", "../modals/modal-ok.component", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -28473,14 +28559,11 @@ System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib",
     exports.JobsListComponent = JobsListComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/BehaviorSubject.js', ['./Subject', './util/ObjectUnsubscribedError'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -28530,14 +28613,11 @@ System.registerDynamic('npm:rxjs/BehaviorSubject.js', ['./Subject', './util/Obje
     }(Subject_1.Subject);
     exports.BehaviorSubject = BehaviorSubject;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/observable/IteratorObservable.js', ['../util/root', '../Observable', '../symbol/iterator'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -28718,14 +28798,11 @@ System.registerDynamic('npm:rxjs/observable/IteratorObservable.js', ['../util/ro
         return valueAsNumber < 0 ? -1 : 1;
     }
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/observable/ArrayLikeObservable.js', ['../Observable', './ScalarObservable', './EmptyObservable'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -28800,14 +28877,11 @@ System.registerDynamic('npm:rxjs/observable/ArrayLikeObservable.js', ['../Observ
     }(Observable_1.Observable);
     exports.ArrayLikeObservable = ArrayLikeObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/Notification.js', ['./Observable'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var Observable_1 = $__require('./Observable');
     /**
@@ -28934,14 +29008,11 @@ System.registerDynamic('npm:rxjs/Notification.js', ['./Observable'], true, funct
     }();
     exports.Notification = Notification;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/observeOn.js', ['../Subscriber', '../Notification'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -29031,14 +29102,11 @@ System.registerDynamic('npm:rxjs/operator/observeOn.js', ['../Subscriber', '../N
     }();
     exports.ObserveOnMessage = ObserveOnMessage;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/observable/FromObservable.js', ['../util/isArray', '../util/isPromise', './PromiseObservable', './IteratorObservable', './ArrayObservable', './ArrayLikeObservable', '../symbol/iterator', '../Observable', '../operator/observeOn', '../symbol/observable'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -29160,28 +29228,22 @@ System.registerDynamic('npm:rxjs/observable/FromObservable.js', ['../util/isArra
     }(Observable_1.Observable);
     exports.FromObservable = FromObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/from.js", ["./FromObservable"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var FromObservable_1 = $__require("./FromObservable");
+  var FromObservable_1 = $__require('./FromObservable');
   exports.from = FromObservable_1.FromObservable.create;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/concatMap.js", ["./mergeMap"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var mergeMap_1 = $__require("./mergeMap");
+  var mergeMap_1 = $__require('./mergeMap');
   /* tslint:disable:max-line-length */
   /**
    * Projects each source value to an Observable which is merged in the output
@@ -29250,14 +29312,11 @@ System.registerDynamic("npm:rxjs/operator/concatMap.js", ["./mergeMap"], true, f
   }
   exports.concatMap = concatMap;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/every.js", ["../Subscriber"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -29266,7 +29325,7 @@ System.registerDynamic("npm:rxjs/operator/every.js", ["../Subscriber"], true, fu
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscriber_1 = $__require("../Subscriber");
+    var Subscriber_1 = $__require('../Subscriber');
     /**
      * Returns an Observable that emits whether or not every item of the source satisfies the condition specified.
      *
@@ -29333,14 +29392,11 @@ System.registerDynamic("npm:rxjs/operator/every.js", ["../Subscriber"], true, fu
         return EverySubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/first.js', ['../Subscriber', '../util/EmptyError'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -29491,14 +29547,11 @@ System.registerDynamic('npm:rxjs/operator/first.js', ['../Subscriber', '../util/
         return FirstSubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/mergeMap.js', ['../util/subscribeToResult', '../OuterSubscriber'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -29673,14 +29726,11 @@ System.registerDynamic('npm:rxjs/operator/mergeMap.js', ['../util/subscribeToRes
     }(OuterSubscriber_1.OuterSubscriber);
     exports.MergeMapSubscriber = MergeMapSubscriber;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/reduce.js", ["../Subscriber"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -29689,7 +29739,7 @@ System.registerDynamic("npm:rxjs/operator/reduce.js", ["../Subscriber"], true, f
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscriber_1 = $__require("../Subscriber");
+    var Subscriber_1 = $__require('../Subscriber');
     /* tslint:disable:max-line-length */
     /**
      * Applies an accumulator function over the source Observable, and returns the
@@ -29806,16 +29856,13 @@ System.registerDynamic("npm:rxjs/operator/reduce.js", ["../Subscriber"], true, f
     }(Subscriber_1.Subscriber);
     exports.ReduceSubscriber = ReduceSubscriber;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/concatAll.js", ["./mergeAll"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var mergeAll_1 = $__require("./mergeAll");
+  var mergeAll_1 = $__require('./mergeAll');
   /* tslint:disable:max-line-length */
   /**
    * Converts a higher-order Observable into a first-order Observable by
@@ -29870,14 +29917,11 @@ System.registerDynamic("npm:rxjs/operator/concatAll.js", ["./mergeAll"], true, f
   }
   exports.concatAll = concatAll;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/observable/PromiseObservable.js', ['../util/root', '../Observable'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -30002,26 +30046,20 @@ System.registerDynamic('npm:rxjs/observable/PromiseObservable.js', ['../util/roo
         }
     }
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/fromPromise.js", ["./PromiseObservable"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var PromiseObservable_1 = $__require("./PromiseObservable");
+  var PromiseObservable_1 = $__require('./PromiseObservable');
   exports.fromPromise = PromiseObservable_1.PromiseObservable.create;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/util/EmptyError.js', [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -30052,14 +30090,11 @@ System.registerDynamic('npm:rxjs/util/EmptyError.js', [], true, function ($__req
     }(Error);
     exports.EmptyError = EmptyError;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/last.js', ['../Subscriber', '../util/EmptyError'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -30177,14 +30212,11 @@ System.registerDynamic('npm:rxjs/operator/last.js', ['../Subscriber', '../util/E
         return LastSubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/mergeAll.js', ['../OuterSubscriber', '../util/subscribeToResult'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -30298,8 +30330,6 @@ System.registerDynamic('npm:rxjs/operator/mergeAll.js', ['../OuterSubscriber', '
     }(OuterSubscriber_1.OuterSubscriber);
     exports.MergeAllSubscriber = MergeAllSubscriber;
     
-
-    return module.exports;
 });
 (function() {
 var define = System.amdDefine;
@@ -30521,7 +30551,7 @@ var define = System.amdDefine;
     return true;
   }
   function containsQueryParams(container, containee) {
-    return Object.keys(containee) <= Object.keys(container) && Object.keys(containee).every(function(key) {
+    return Object.keys(containee).length <= Object.keys(container).length && Object.keys(containee).every(function(key) {
       return containee[key] === container[key];
     });
   }
@@ -32511,6 +32541,7 @@ var define = System.amdDefine;
       if (extras === void 0) {
         extras = {skipLocationChange: false};
       }
+      validateCommands(commands);
       if (typeof extras.queryParams === 'object' && extras.queryParams !== null) {
         extras.queryParams = this.removeEmptyProps(extras.queryParams);
       }
@@ -33145,6 +33176,14 @@ var define = System.amdDefine;
     }
     return outlet;
   }
+  function validateCommands(commands) {
+    for (var i = 0; i < commands.length; i++) {
+      var cmd = commands[i];
+      if (cmd == null) {
+        throw new Error("The requested path contains " + cmd + " segment at index " + i);
+      }
+    }
+  }
   var RouterLink = (function() {
     function RouterLink(router, route) {
       this.router = router;
@@ -33273,7 +33312,10 @@ var define = System.amdDefine;
       return [{type: Router}, {type: ActivatedRoute}, {type: _angular_common.LocationStrategy}];
     };
     RouterLinkWithHref.propDecorators = {
-      'target': [{type: _angular_core.Input}],
+      'target': [{
+        type: _angular_core.HostBinding,
+        args: ['attr.target']
+      }, {type: _angular_core.Input}],
       'queryParams': [{type: _angular_core.Input}],
       'fragment': [{type: _angular_core.Input}],
       'preserveQueryParams': [{type: _angular_core.Input}],
@@ -33293,12 +33335,14 @@ var define = System.amdDefine;
     return s === '' || !!s;
   }
   var RouterLinkActive = (function() {
-    function RouterLinkActive(router, element, renderer) {
+    function RouterLinkActive(router, element, renderer, cdr) {
       var _this = this;
       this.router = router;
       this.element = element;
       this.renderer = renderer;
+      this.cdr = cdr;
       this.classes = [];
+      this.active = false;
       this.routerLinkActiveOptions = {exact: false};
       this.subscription = router.events.subscribe(function(s) {
         if (s instanceof NavigationEnd) {
@@ -33308,28 +33352,27 @@ var define = System.amdDefine;
     }
     Object.defineProperty(RouterLinkActive.prototype, "isActive", {
       get: function() {
-        return this.hasActiveLink();
+        return this.active;
       },
       enumerable: true,
       configurable: true
     });
     RouterLinkActive.prototype.ngAfterContentInit = function() {
       var _this = this;
-      this.links.changes.subscribe(function(s) {
+      this.links.changes.subscribe(function(_) {
         return _this.update();
       });
-      this.linksWithHrefs.changes.subscribe(function(s) {
+      this.linksWithHrefs.changes.subscribe(function(_) {
         return _this.update();
       });
       this.update();
     };
     Object.defineProperty(RouterLinkActive.prototype, "routerLinkActive", {
       set: function(data) {
-        if (Array.isArray(data)) {
-          this.classes = (data);
-        } else {
-          this.classes = data.split(' ');
-        }
+        var classes = Array.isArray(data) ? data : data.split(' ');
+        this.classes = classes.filter(function(c) {
+          return !!c;
+        });
       },
       enumerable: true,
       configurable: true
@@ -33344,12 +33387,14 @@ var define = System.amdDefine;
       var _this = this;
       if (!this.links || !this.linksWithHrefs || !this.router.navigated)
         return;
-      var isActive = this.hasActiveLink();
-      this.classes.forEach(function(c) {
-        if (c) {
-          _this.renderer.setElementClass(_this.element.nativeElement, c, isActive);
-        }
-      });
+      var hasActiveLinks = this.hasActiveLinks();
+      if (this.active !== hasActiveLinks) {
+        this.active = hasActiveLinks;
+        this.classes.forEach(function(c) {
+          return _this.renderer.setElementClass(_this.element.nativeElement, c, hasActiveLinks);
+        });
+        this.cdr.detectChanges();
+      }
     };
     RouterLinkActive.prototype.isLinkActive = function(router) {
       var _this = this;
@@ -33357,7 +33402,7 @@ var define = System.amdDefine;
         return router.isActive(link.urlTree, _this.routerLinkActiveOptions.exact);
       };
     };
-    RouterLinkActive.prototype.hasActiveLink = function() {
+    RouterLinkActive.prototype.hasActiveLinks = function() {
       return this.links.some(this.isLinkActive(this.router)) || this.linksWithHrefs.some(this.isLinkActive(this.router));
     };
     RouterLinkActive.decorators = [{
@@ -33368,7 +33413,7 @@ var define = System.amdDefine;
       }]
     }];
     RouterLinkActive.ctorParameters = function() {
-      return [{type: Router}, {type: _angular_core.ElementRef}, {type: _angular_core.Renderer}];
+      return [{type: Router}, {type: _angular_core.ElementRef}, {type: _angular_core.Renderer}, {type: _angular_core.ChangeDetectorRef}];
     };
     RouterLinkActive.propDecorators = {
       'links': [{
@@ -33736,7 +33781,7 @@ var define = System.amdDefine;
       useExisting: ROUTER_INITIALIZER
     }];
   }
-  var VERSION = new _angular_core.Version('3.4.2');
+  var VERSION = new _angular_core.Version('3.4.5');
   var __router_private__ = {
     ROUTER_PROVIDERS: ROUTER_PROVIDERS,
     ROUTES: ROUTES,
@@ -34915,7 +34960,7 @@ var define = System.amdDefine;
           });
         } else {
           Object.keys(rawClassVal).forEach(function(klass) {
-            if (isPresent(rawClassVal[klass]))
+            if (rawClassVal[klass] != null)
               _this._toggleClass(klass, !isCleanup);
           });
         }
@@ -35279,7 +35324,8 @@ var define = System.amdDefine;
   var NgPluralCase = (function() {
     function NgPluralCase(value, template, viewContainer, ngPlural) {
       this.value = value;
-      ngPlural.addCase(value, new SwitchView(viewContainer, template));
+      var isANumber = !isNaN(Number(value));
+      ngPlural.addCase(isANumber ? "=" + value : value, new SwitchView(viewContainer, template));
     }
     NgPluralCase.decorators = [{
       type: _angular_core.Directive,
@@ -35822,7 +35868,7 @@ var define = System.amdDefine;
       this._localization = _localization;
     }
     I18nPluralPipe.prototype.transform = function(value, pluralMap) {
-      if (isBlank(value))
+      if (value == null)
         return '';
       if (typeof pluralMap !== 'object' || pluralMap === null) {
         throw new InvalidPipeArgumentError(I18nPluralPipe, pluralMap);
@@ -35914,7 +35960,7 @@ var define = System.amdDefine;
     if (currencyAsSymbol === void 0) {
       currencyAsSymbol = false;
     }
-    if (isBlank(value))
+    if (value == null)
       return null;
     value = typeof value === 'string' && NumberWrapper.isNumeric(value) ? +value : value;
     if (typeof value !== 'number') {
@@ -35933,13 +35979,13 @@ var define = System.amdDefine;
       if (parts === null) {
         throw new Error(digits + " is not a valid digit info for number pipes");
       }
-      if (isPresent(parts[1])) {
+      if (parts[1] != null) {
         minInt = NumberWrapper.parseIntAutoRadix(parts[1]);
       }
-      if (isPresent(parts[3])) {
+      if (parts[3] != null) {
         minFraction = NumberWrapper.parseIntAutoRadix(parts[3]);
       }
-      if (isPresent(parts[5])) {
+      if (parts[5] != null) {
         maxFraction = NumberWrapper.parseIntAutoRadix(parts[5]);
       }
     }
@@ -36035,7 +36081,7 @@ var define = System.amdDefine;
   var SlicePipe = (function() {
     function SlicePipe() {}
     SlicePipe.prototype.transform = function(value, start, end) {
-      if (isBlank(value))
+      if (value == null)
         return value;
       if (!this.supports(value)) {
         throw new InvalidPipeArgumentError(SlicePipe, value);
@@ -36095,7 +36141,7 @@ var define = System.amdDefine;
     };
     return CommonModule;
   }());
-  var VERSION = new _angular_core.Version('2.4.2');
+  var VERSION = new _angular_core.Version('2.4.5');
   exports.NgLocalization = NgLocalization;
   exports.CommonModule = CommonModule;
   exports.NgClass = NgClass;
@@ -36430,7 +36476,7 @@ var define = System.amdDefine;
       });
     };
     WebAnimationsPlayer.prototype._triggerWebAnimation = function(element, keyframes, options) {
-      return (element.animate(keyframes, options));
+      return (element['animate'](keyframes, options));
     };
     Object.defineProperty(WebAnimationsPlayer.prototype, "domPlayer", {
       get: function() {
@@ -38303,8 +38349,10 @@ var define = System.amdDefine;
   var VALUES = '[-,."\'%_!# a-zA-Z0-9]+';
   var TRANSFORMATION_FNS = '(?:matrix|translate|scale|rotate|skew|perspective)(?:X|Y|3d)?';
   var COLOR_FNS = '(?:rgb|hsl)a?';
-  var FN_ARGS = '\\([-0-9.%, a-zA-Z]+\\)';
-  var SAFE_STYLE_VALUE = new RegExp("^(" + VALUES + "|(?:" + TRANSFORMATION_FNS + "|" + COLOR_FNS + ")" + FN_ARGS + ")$", 'g');
+  var GRADIENTS = '(?:repeating-)?(?:linear|radial)-gradient';
+  var CSS3_FNS = '(?:calc|attr)';
+  var FN_ARGS = '\\([-0-9.%, #a-zA-Z]+\\)';
+  var SAFE_STYLE_VALUE = new RegExp(("^(" + VALUES + "|") + ("(?:" + TRANSFORMATION_FNS + "|" + COLOR_FNS + "|" + GRADIENTS + "|" + CSS3_FNS + ")") + (FN_ARGS + ")$"), 'g');
   var URL_RE = /^url\(([^)]+)\)$/;
   function hasBalancedQuotes(value) {
     var outsideSingle = true;
@@ -38664,7 +38712,7 @@ var define = System.amdDefine;
     BROWSER_SANITIZATION_PROVIDERS: BROWSER_SANITIZATION_PROVIDERS,
     WebAnimationsDriver: WebAnimationsDriver
   };
-  var VERSION = new core.Version('2.4.2');
+  var VERSION = new core.Version('2.4.5');
   exports.BrowserModule = BrowserModule;
   exports.platformBrowser = platformBrowser;
   exports.Title = Title;
@@ -39592,7 +39640,7 @@ var define = System.amdDefine;
         case 'text/html':
           return ContentType.TEXT;
         case 'application/octet-stream':
-          return ContentType.BLOB;
+          return this._body instanceof ArrayBuffer$1 ? ContentType.ARRAY_BUFFER : ContentType.BLOB;
         default:
           return this.detectContentTypeFromBody();
       }
@@ -39608,7 +39656,7 @@ var define = System.amdDefine;
         return ContentType.BLOB;
       } else if (this._body instanceof ArrayBuffer$1) {
         return ContentType.ARRAY_BUFFER;
-      } else if (this._body && typeof this._body == 'object') {
+      } else if (this._body && typeof this._body === 'object') {
         return ContentType.JSON;
       } else {
         return ContentType.TEXT;
@@ -39795,7 +39843,7 @@ var define = System.amdDefine;
     };
     return JsonpModule;
   }());
-  var VERSION = new _angular_core.Version('2.4.2');
+  var VERSION = new _angular_core.Version('2.4.5');
   exports.BrowserXhr = BrowserXhr;
   exports.JSONPBackend = JSONPBackend;
   exports.JSONPConnection = JSONPConnection;
@@ -39829,8 +39877,7 @@ var define = System.amdDefine;
 System.registerDynamic('npm:rxjs/operator/toPromise.js', ['../util/root'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var root_1 = $__require('../util/root');
     /* tslint:disable:max-line-length */
@@ -39865,27 +39912,21 @@ System.registerDynamic('npm:rxjs/operator/toPromise.js', ['../util/root'], true,
     }
     exports.toPromise = toPromise;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/toPromise.js', ['../../Observable', '../../operator/toPromise'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var toPromise_1 = $__require('../../operator/toPromise');
   Observable_1.Observable.prototype.toPromise = toPromise_1.toPromise;
   
-
-  return module.exports;
 });
 System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/core", "@angular/http", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -40019,14 +40060,11 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
     exports.JobService = JobService;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/job.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var Job = function () {
         function Job() {}
@@ -40035,14 +40073,11 @@ System.registerDynamic("dist/public/app/job.js", [], true, function ($__require,
     exports.Job = Job;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -40082,14 +40117,11 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib"
     exports.JobCreateComponent = JobCreateComponent;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -40113,14 +40145,11 @@ System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angu
     exports.AppRoutingModule = AppRoutingModule;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/ScalarObservable.js", ["../Observable"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40129,7 +40158,7 @@ System.registerDynamic("npm:rxjs/observable/ScalarObservable.js", ["../Observabl
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Observable_1 = $__require("../Observable");
+    var Observable_1 = $__require('../Observable');
     /**
      * We need this JSDoc comment for affecting ESDoc.
      * @extends {Ignored}
@@ -40182,14 +40211,11 @@ System.registerDynamic("npm:rxjs/observable/ScalarObservable.js", ["../Observabl
     }(Observable_1.Observable);
     exports.ScalarObservable = ScalarObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/EmptyObservable.js", ["../Observable"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40198,7 +40224,7 @@ System.registerDynamic("npm:rxjs/observable/EmptyObservable.js", ["../Observable
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Observable_1 = $__require("../Observable");
+    var Observable_1 = $__require('../Observable');
     /**
      * We need this JSDoc comment for affecting ESDoc.
      * @extends {Ignored}
@@ -40272,28 +40298,22 @@ System.registerDynamic("npm:rxjs/observable/EmptyObservable.js", ["../Observable
     }(Observable_1.Observable);
     exports.EmptyObservable = EmptyObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/isScheduler.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     function isScheduler(value) {
         return value && typeof value.schedule === 'function';
     }
     exports.isScheduler = isScheduler;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/observable/ArrayObservable.js', ['../Observable', './ScalarObservable', './EmptyObservable', '../util/isScheduler'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40417,39 +40437,30 @@ System.registerDynamic('npm:rxjs/observable/ArrayObservable.js', ['../Observable
     }(Observable_1.Observable);
     exports.ArrayObservable = ArrayObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/of.js", ["./ArrayObservable"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var ArrayObservable_1 = $__require("./ArrayObservable");
+  var ArrayObservable_1 = $__require('./ArrayObservable');
   exports.of = ArrayObservable_1.ArrayObservable.of;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/observable/of.js', ['../../Observable', '../../observable/of'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var of_1 = $__require('../../observable/of');
   Observable_1.Observable.of = of_1.of;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/ErrorObservable.js", ["../Observable"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40458,7 +40469,7 @@ System.registerDynamic("npm:rxjs/observable/ErrorObservable.js", ["../Observable
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Observable_1 = $__require("../Observable");
+    var Observable_1 = $__require('../Observable');
     /**
      * We need this JSDoc comment for affecting ESDoc.
      * @extends {Ignored}
@@ -40534,39 +40545,30 @@ System.registerDynamic("npm:rxjs/observable/ErrorObservable.js", ["../Observable
     }(Observable_1.Observable);
     exports.ErrorObservable = ErrorObservable;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/observable/throw.js", ["./ErrorObservable"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
-  var ErrorObservable_1 = $__require("./ErrorObservable");
+  var ErrorObservable_1 = $__require('./ErrorObservable');
   exports._throw = ErrorObservable_1.ErrorObservable.create;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/observable/throw.js', ['../../Observable', '../../observable/throw'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var throw_1 = $__require('../../observable/throw');
   Observable_1.Observable.throw = throw_1._throw;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/catch.js', ['../OuterSubscriber', '../util/subscribeToResult'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40634,28 +40636,22 @@ System.registerDynamic('npm:rxjs/operator/catch.js', ['../OuterSubscriber', '../
         return CatchSubscriber;
     }(OuterSubscriber_1.OuterSubscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/catch.js', ['../../Observable', '../../operator/catch'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var catch_1 = $__require('../../operator/catch');
   Observable_1.Observable.prototype.catch = catch_1._catch;
   Observable_1.Observable.prototype._catch = catch_1._catch;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/scheduler/Action.js", ["../Subscription"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40664,7 +40660,7 @@ System.registerDynamic("npm:rxjs/scheduler/Action.js", ["../Subscription"], true
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscription_1 = $__require("../Subscription");
+    var Subscription_1 = $__require('../Subscription');
     /**
      * A unit of work to be executed in a {@link Scheduler}. An action is typically
      * created from within a Scheduler and an RxJS user does not need to concern
@@ -40704,14 +40700,11 @@ System.registerDynamic("npm:rxjs/scheduler/Action.js", ["../Subscription"], true
     }(Subscription_1.Subscription);
     exports.Action = Action;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/scheduler/AsyncAction.js', ['../util/root', './Action'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40860,8 +40853,6 @@ System.registerDynamic('npm:rxjs/scheduler/AsyncAction.js', ['../util/root', './
     }(Action_1.Action);
     exports.AsyncAction = AsyncAction;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/Scheduler.js", [], true, function ($__require, exports, module) {
     "use strict";
@@ -40882,8 +40873,7 @@ System.registerDynamic("npm:rxjs/Scheduler.js", [], true, function ($__require, 
      * @class Scheduler
      */
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var Scheduler = function () {
         function Scheduler(SchedulerAction, now) {
@@ -40923,14 +40913,11 @@ System.registerDynamic("npm:rxjs/Scheduler.js", [], true, function ($__require, 
     }();
     exports.Scheduler = Scheduler;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/scheduler/AsyncScheduler.js", ["../Scheduler"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -40939,7 +40926,7 @@ System.registerDynamic("npm:rxjs/scheduler/AsyncScheduler.js", ["../Scheduler"],
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Scheduler_1 = $__require("../Scheduler");
+    var Scheduler_1 = $__require('../Scheduler');
     var AsyncScheduler = function (_super) {
         __extends(AsyncScheduler, _super);
         function AsyncScheduler() {
@@ -40984,27 +40971,21 @@ System.registerDynamic("npm:rxjs/scheduler/AsyncScheduler.js", ["../Scheduler"],
     }(Scheduler_1.Scheduler);
     exports.AsyncScheduler = AsyncScheduler;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/scheduler/async.js', ['./AsyncAction', './AsyncScheduler'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var AsyncAction_1 = $__require('./AsyncAction');
   var AsyncScheduler_1 = $__require('./AsyncScheduler');
   exports.async = new AsyncScheduler_1.AsyncScheduler(AsyncAction_1.AsyncAction);
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/debounceTime.js', ['../Subscriber', '../scheduler/async'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41125,27 +41106,21 @@ System.registerDynamic('npm:rxjs/operator/debounceTime.js', ['../Subscriber', '.
         subscriber.debouncedNext();
     }
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/debounceTime.js', ['../../Observable', '../../operator/debounceTime'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var debounceTime_1 = $__require('../../operator/debounceTime');
   Observable_1.Observable.prototype.debounceTime = debounceTime_1.debounceTime;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/distinctUntilChanged.js', ['../Subscriber', '../util/tryCatch', '../util/errorObject'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41255,27 +41230,21 @@ System.registerDynamic('npm:rxjs/operator/distinctUntilChanged.js', ['../Subscri
         return DistinctUntilChangedSubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/distinctUntilChanged.js', ['../../Observable', '../../operator/distinctUntilChanged'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var distinctUntilChanged_1 = $__require('../../operator/distinctUntilChanged');
   Observable_1.Observable.prototype.distinctUntilChanged = distinctUntilChanged_1.distinctUntilChanged;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/do.js", ["../Subscriber"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41284,7 +41253,7 @@ System.registerDynamic("npm:rxjs/operator/do.js", ["../Subscriber"], true, funct
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscriber_1 = $__require("../Subscriber");
+    var Subscriber_1 = $__require('../Subscriber');
     /* tslint:disable:max-line-length */
     /**
      * Perform a side effect for every emission on the source Observable, but return
@@ -41388,28 +41357,22 @@ System.registerDynamic("npm:rxjs/operator/do.js", ["../Subscriber"], true, funct
         return DoSubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/do.js', ['../../Observable', '../../operator/do'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var do_1 = $__require('../../operator/do');
   Observable_1.Observable.prototype.do = do_1._do;
   Observable_1.Observable.prototype._do = do_1._do;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/operator/filter.js", ["../Subscriber"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41418,7 +41381,7 @@ System.registerDynamic("npm:rxjs/operator/filter.js", ["../Subscriber"], true, f
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscriber_1 = $__require("../Subscriber");
+    var Subscriber_1 = $__require('../Subscriber');
     /* tslint:disable:max-line-length */
     /**
      * Filter items emitted by the source Observable by only emitting those that
@@ -41504,27 +41467,21 @@ System.registerDynamic("npm:rxjs/operator/filter.js", ["../Subscriber"], true, f
         return FilterSubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/filter.js', ['../../Observable', '../../operator/filter'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var filter_1 = $__require('../../operator/filter');
   Observable_1.Observable.prototype.filter = filter_1.filter;
   
-
-  return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/map.js', ['../Subscriber'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41613,27 +41570,21 @@ System.registerDynamic('npm:rxjs/operator/map.js', ['../Subscriber'], true, func
         return MapSubscriber;
     }(Subscriber_1.Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/map.js', ['../../Observable', '../../operator/map'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var map_1 = $__require('../../operator/map');
   Observable_1.Observable.prototype.map = map_1.map;
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/OuterSubscriber.js", ["./Subscriber"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41642,7 +41593,7 @@ System.registerDynamic("npm:rxjs/OuterSubscriber.js", ["./Subscriber"], true, fu
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscriber_1 = $__require("./Subscriber");
+    var Subscriber_1 = $__require('./Subscriber');
     /**
      * We need this JSDoc comment for affecting ESDoc.
      * @ignore
@@ -41666,28 +41617,22 @@ System.registerDynamic("npm:rxjs/OuterSubscriber.js", ["./Subscriber"], true, fu
     }(Subscriber_1.Subscriber);
     exports.OuterSubscriber = OuterSubscriber;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/util/isPromise.js', [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     function isPromise(value) {
         return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
     }
     exports.isPromise = isPromise;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/symbol/iterator.js', ['../util/root'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var root_1 = $__require('../util/root');
     function symbolIteratorPonyfill(root) {
@@ -41721,14 +41666,11 @@ System.registerDynamic('npm:rxjs/symbol/iterator.js', ['../util/root'], true, fu
     exports.symbolIteratorPonyfill = symbolIteratorPonyfill;
     exports.$$iterator = symbolIteratorPonyfill(root_1.root);
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/InnerSubscriber.js", ["./Subscriber"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41737,7 +41679,7 @@ System.registerDynamic("npm:rxjs/InnerSubscriber.js", ["./Subscriber"], true, fu
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscriber_1 = $__require("./Subscriber");
+    var Subscriber_1 = $__require('./Subscriber');
     /**
      * We need this JSDoc comment for affecting ESDoc.
      * @ignore
@@ -41767,14 +41709,11 @@ System.registerDynamic("npm:rxjs/InnerSubscriber.js", ["./Subscriber"], true, fu
     }(Subscriber_1.Subscriber);
     exports.InnerSubscriber = InnerSubscriber;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/util/subscribeToResult.js', ['./root', './isArray', './isPromise', './isObject', '../Observable', '../symbol/iterator', '../InnerSubscriber', '../symbol/observable'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var root_1 = $__require('./root');
     var isArray_1 = $__require('./isArray');
@@ -41848,14 +41787,11 @@ System.registerDynamic('npm:rxjs/util/subscribeToResult.js', ['./root', './isArr
     }
     exports.subscribeToResult = subscribeToResult;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/operator/switchMap.js', ['../OuterSubscriber', '../util/subscribeToResult'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -41995,27 +41931,21 @@ System.registerDynamic('npm:rxjs/operator/switchMap.js', ['../OuterSubscriber', 
         return SwitchMapSubscriber;
     }(OuterSubscriber_1.OuterSubscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/add/operator/switchMap.js', ['../../Observable', '../../operator/switchMap'], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   var Observable_1 = $__require('../../Observable');
   var switchMap_1 = $__require('../../operator/switchMap');
   Observable_1.Observable.prototype.switchMap = switchMap_1.switchMap;
   
-
-  return module.exports;
 });
 System.registerDynamic("dist/public/app/rxjs-extensions.js", ["rxjs/add/observable/of", "rxjs/add/observable/throw", "rxjs/add/operator/catch", "rxjs/add/operator/debounceTime", "rxjs/add/operator/distinctUntilChanged", "rxjs/add/operator/do", "rxjs/add/operator/filter", "rxjs/add/operator/map", "rxjs/add/operator/switchMap"], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   $__require("rxjs/add/observable/of");
   $__require("rxjs/add/observable/throw");
@@ -42028,14 +41958,11 @@ System.registerDynamic("dist/public/app/rxjs-extensions.js", ["rxjs/add/observab
   $__require("rxjs/add/operator/switchMap");
 
   
-
-  return module.exports;
 });
 System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./rxjs-extensions"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
@@ -42070,14 +41997,11 @@ System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core
     exports.AppModule = AppModule;
 
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/util/ObjectUnsubscribedError.js', [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -42107,14 +42031,11 @@ System.registerDynamic('npm:rxjs/util/ObjectUnsubscribedError.js', [], true, fun
     }(Error);
     exports.ObjectUnsubscribedError = ObjectUnsubscribedError;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/SubjectSubscription.js", ["./Subscription"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -42123,7 +42044,7 @@ System.registerDynamic("npm:rxjs/SubjectSubscription.js", ["./Subscription"], tr
         }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var Subscription_1 = $__require("./Subscription");
+    var Subscription_1 = $__require('./Subscription');
     /**
      * We need this JSDoc comment for affecting ESDoc.
      * @ignore
@@ -42157,14 +42078,11 @@ System.registerDynamic("npm:rxjs/SubjectSubscription.js", ["./Subscription"], tr
     }(Subscription_1.Subscription);
     exports.SubjectSubscription = SubjectSubscription;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/Subject.js', ['./Observable', './Subscriber', './Subscription', './util/ObjectUnsubscribedError', './SubjectSubscription', './symbol/rxSubscriber'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -42323,57 +42241,45 @@ System.registerDynamic('npm:rxjs/Subject.js', ['./Observable', './Subscriber', '
     }(Subject);
     exports.AnonymousSubject = AnonymousSubject;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/isArray.js", [], true, function ($__require, exports, module) {
   "use strict";
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   exports.isArray = Array.isArray || function (x) {
     return x && typeof x.length === 'number';
   };
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/isObject.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     function isObject(x) {
         return x != null && typeof x === 'object';
     }
     exports.isObject = isObject;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/isFunction.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     function isFunction(x) {
         return typeof x === 'function';
     }
     exports.isFunction = isFunction;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/tryCatch.js", ["./errorObject"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
-    var errorObject_1 = $__require("./errorObject");
+    var errorObject_1 = $__require('./errorObject');
     var tryCatchTarget;
     function tryCatcher() {
         try {
@@ -42390,26 +42296,20 @@ System.registerDynamic("npm:rxjs/util/tryCatch.js", ["./errorObject"], true, fun
     exports.tryCatch = tryCatch;
     ;
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/errorObject.js", [], true, function ($__require, exports, module) {
   "use strict";
   // typeof any so that it we don't have to cast when comparing a result to the error object
 
-  var define,
-      global = this || self,
+  var global = this || self,
       GLOBAL = global;
   exports.errorObject = { e: {} };
   
-
-  return module.exports;
 });
 System.registerDynamic("npm:rxjs/util/UnsubscriptionError.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -42438,14 +42338,11 @@ System.registerDynamic("npm:rxjs/util/UnsubscriptionError.js", [], true, functio
     }(Error);
     exports.UnsubscriptionError = UnsubscriptionError;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/isObject', './util/isFunction', './util/tryCatch', './util/errorObject', './util/UnsubscriptionError'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -42629,14 +42526,11 @@ System.registerDynamic('npm:rxjs/Subscription.js', ['./util/isArray', './util/is
         }, []);
     }
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/Subscriber.js', ['./util/isFunction', './Subscription', './Observer', './symbol/rxSubscriber'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var __extends = this && this.__extends || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -42880,27 +42774,21 @@ System.registerDynamic('npm:rxjs/Subscriber.js', ['./util/isFunction', './Subscr
         return SafeSubscriber;
     }(Subscriber);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/symbol/rxSubscriber.js', ['../util/root'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var root_1 = $__require('../util/root');
     var Symbol = root_1.root.Symbol;
     exports.$$rxSubscriber = typeof Symbol === 'function' && typeof Symbol.for === 'function' ? Symbol.for('rxSubscriber') : '@@rxSubscriber';
     
-
-    return module.exports;
 });
 System.registerDynamic("npm:rxjs/Observer.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     exports.empty = {
         closed: true,
@@ -42911,14 +42799,11 @@ System.registerDynamic("npm:rxjs/Observer.js", [], true, function ($__require, e
         complete: function () {}
     };
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/util/toSubscriber.js', ['../Subscriber', '../symbol/rxSubscriber', '../Observer'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var Subscriber_1 = $__require('../Subscriber');
     var rxSubscriber_1 = $__require('../symbol/rxSubscriber');
@@ -42939,8 +42824,6 @@ System.registerDynamic('npm:rxjs/util/toSubscriber.js', ['../Subscriber', '../sy
     }
     exports.toSubscriber = toSubscriber;
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/util/root.js', [], true, function ($__require, exports, module) {
     "use strict";
@@ -42950,22 +42833,18 @@ System.registerDynamic('npm:rxjs/util/root.js', [], true, function ($__require, 
      * global: Node.js/other
      */
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     exports.root = typeof window == 'object' && window.window === window && window || typeof self == 'object' && self.self === self && self || typeof global == 'object' && global.global === global && global;
     if (!exports.root) {
         throw new Error('RxJS could not find any global context (window, self, global)');
     }
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/symbol/observable.js', ['../util/root'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var root_1 = $__require('../util/root');
     function getSymbolObservable(context) {
@@ -42986,14 +42865,11 @@ System.registerDynamic('npm:rxjs/symbol/observable.js', ['../util/root'], true, 
     exports.getSymbolObservable = getSymbolObservable;
     exports.$$observable = getSymbolObservable(root_1.root);
     
-
-    return module.exports;
 });
 System.registerDynamic('npm:rxjs/Observable.js', ['./util/root', './util/toSubscriber', './symbol/observable'], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var root_1 = $__require('./util/root');
     var toSubscriber_1 = $__require('./util/toSubscriber');
@@ -43119,8 +42995,6 @@ System.registerDynamic('npm:rxjs/Observable.js', ['./util/root', './util/toSubsc
     }();
     exports.Observable = Observable;
     
-
-    return module.exports;
 });
 (function() {
 var define = System.amdDefine;
@@ -43622,7 +43496,7 @@ var define = System.amdDefine;
     });
     return Version;
   }());
-  var VERSION = new Version('2.4.2');
+  var VERSION = new Version('2.4.5');
   function forwardRef(forwardRefFn) {
     ((forwardRefFn)).__forward_ref__ = forwardRef;
     ((forwardRefFn)).toString = function() {
@@ -46590,7 +46464,6 @@ var define = System.amdDefine;
     function ViewUtils(_renderer, sanitizer, animationQueue) {
       this._renderer = _renderer;
       this.animationQueue = animationQueue;
-      this._nextCompTypeId = 0;
       this.sanitizer = sanitizer;
     }
     ViewUtils.prototype.renderComponent = function(renderComponentType) {
@@ -49865,7 +49738,7 @@ var define = System.amdDefine;
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
   var _scope_check = wtfCreateScope("AppView#check(ascii id)");
-  var EMPTY_CONTEXT$1 = new Object();
+  var EMPTY_CONTEXT = new Object();
   var UNDEFINED$1 = new Object();
   var AppView = (function() {
     function AppView(clazz, componentType, type, viewUtils, parentView, parentIndex, parentElement, cdMode, declaredViewContainer) {
@@ -49912,7 +49785,7 @@ var define = System.amdDefine;
       return this.createInternal(null);
     };
     AppView.prototype.createHostView = function(rootSelectorOrNode, hostInjector, projectableNodes) {
-      this.context = (EMPTY_CONTEXT$1);
+      this.context = (EMPTY_CONTEXT);
       this._hasExternalHostElement = isPresent(rootSelectorOrNode);
       this._hostInjector = hostInjector;
       this._hostProjectableNodes = projectableNodes;
@@ -50457,6 +50330,8 @@ var define = System.amdDefine;
   exports.ErrorHandler = ErrorHandler;
   exports.AnimationTransitionEvent = AnimationTransitionEvent;
   exports.AnimationPlayer = AnimationPlayer;
+  exports.AnimationStyles = AnimationStyles;
+  exports.AnimationKeyframe = AnimationKeyframe;
   exports.Sanitizer = Sanitizer;
   exports.SecurityContext = SecurityContext;
   exports.ANALYZE_FOR_ENTRY_COMPONENTS = ANALYZE_FOR_ENTRY_COMPONENTS;
@@ -50561,8 +50436,7 @@ var define = System.amdDefine;
 System.registerDynamic("dist/public/app/serverInfo.js", [], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     exports.isProd = false;
     if (_isProd) exports.isProd = true;
@@ -50572,14 +50446,11 @@ System.registerDynamic("dist/public/app/serverInfo.js", [], true, function ($__r
     exports.jobs = _jobs;
 
     
-
-    return module.exports;
 });
 System.registerDynamic("dist/public/app/main.js", ["@angular/platform-browser-dynamic", "./app.module", "@angular/core", "./serverInfo"], true, function ($__require, exports, module) {
     "use strict";
 
-    var define,
-        global = this || self,
+    var global = this || self,
         GLOBAL = global;
     var platform_browser_dynamic_1 = $__require("@angular/platform-browser-dynamic");
     var app_module_1 = $__require("./app.module");
@@ -50589,6 +50460,4 @@ System.registerDynamic("dist/public/app/main.js", ["@angular/platform-browser-dy
     platform_browser_dynamic_1.platformBrowserDynamic().bootstrapModule(app_module_1.AppModule);
 
     
-
-    return module.exports;
 });
