@@ -19748,7 +19748,7 @@ System.registerDynamic('npm:rxjs/observable/FromEventObservable.js', ['../Observ
     var errorObject_1 = $__require('../util/errorObject');
     var Subscription_1 = $__require('../Subscription');
     var toString = Object.prototype.toString;
-    function isNodeStyleEventEmmitter(sourceObj) {
+    function isNodeStyleEventEmitter(sourceObj) {
         return !!sourceObj && typeof sourceObj.addListener === 'function' && typeof sourceObj.removeListener === 'function';
     }
     function isJQueryStyleEventEmitter(sourceObj) {
@@ -19843,7 +19843,7 @@ System.registerDynamic('npm:rxjs/observable/FromEventObservable.js', ['../Observ
                 unsubscribe = function () {
                     return source_2.off(eventName, handler);
                 };
-            } else if (isNodeStyleEventEmmitter(sourceObj)) {
+            } else if (isNodeStyleEventEmitter(sourceObj)) {
                 var source_3 = sourceObj;
                 sourceObj.addListener(eventName, handler);
                 unsubscribe = function () {
@@ -29777,7 +29777,7 @@ System.registerDynamic("npm:rxjs/operator/reduce.js", ["../Subscriber"], true, f
      * @see {@link mergeScan}
      * @see {@link scan}
      *
-     * @param {function(acc: R, value: T): R} accumulator The accumulator function
+     * @param {function(acc: R, value: T, index: number): R} accumulator The accumulator function
      * called on each source value.
      * @param {R} [seed] The initial accumulation value.
      * @return {Observable<R>} An observable of the accumulated values.
@@ -29825,8 +29825,12 @@ System.registerDynamic("npm:rxjs/operator/reduce.js", ["../Subscriber"], true, f
             _super.call(this, destination);
             this.accumulator = accumulator;
             this.hasSeed = hasSeed;
+            this.index = 0;
             this.hasValue = false;
             this.acc = seed;
+            if (!this.hasSeed) {
+                this.index++;
+            }
         }
         ReduceSubscriber.prototype._next = function (value) {
             if (this.hasValue || (this.hasValue = this.hasSeed)) {
@@ -29839,7 +29843,7 @@ System.registerDynamic("npm:rxjs/operator/reduce.js", ["../Subscriber"], true, f
         ReduceSubscriber.prototype._tryReduce = function (value) {
             var result;
             try {
-                result = this.accumulator(this.acc, value);
+                result = this.accumulator(this.acc, value, this.index++);
             } catch (err) {
                 this.destination.error(err);
                 return;
@@ -39882,8 +39886,51 @@ System.registerDynamic('npm:rxjs/operator/toPromise.js', ['../util/root'], true,
     var root_1 = $__require('../util/root');
     /* tslint:disable:max-line-length */
     /**
-     * @param PromiseCtor
-     * @return {Promise<T>}
+     * Converts an Observable sequence to a ES2015 compliant promise.
+     *
+     * @example
+     * // Using normal ES2015
+     * let source = Rx.Observable
+     *   .just(42)
+     *   .toPromise();
+     *
+     * source.then((value) => console.log('Value: %s', value));
+     * // => Value: 42
+     *
+     * // Rejected Promise
+     * // Using normal ES2015
+     * let source = Rx.Observable
+     *   .throw(new Error('woops'))
+     *   .toPromise();
+     *
+     * source
+     *   .then((value) => console.log('Value: %s', value))
+     *   .catch((err) => console.log('Error: %s', err));
+     * // => Error: Error: woops
+     *
+     * // Setting via the config
+     * Rx.config.Promise = RSVP.Promise;
+     *
+     * let source = Rx.Observable
+     *   .of(42)
+     *   .toPromise();
+     *
+     * source.then((value) => console.log('Value: %s', value));
+     * // => Value: 42
+     *
+     * // Setting via the method
+     * let source = Rx.Observable
+     *   .just(42)
+     *   .toPromise(RSVP.Promise);
+     *
+     * source.then((value) => console.log('Value: %s', value));
+     * // => Value: 42
+     *
+     * @param PromiseCtor promise The constructor of the promise. If not provided,
+     * it will look for a constructor first in Rx.config.Promise then fall back to
+     * the native Promise constructor if available.
+     * @return {Promise<T>} An ES2015 compatible promise with the last value from
+     * the observable sequence.
      * @method toPromise
      * @owner Observable
      */
@@ -40581,6 +40628,54 @@ System.registerDynamic('npm:rxjs/operator/catch.js', ['../OuterSubscriber', '../
     var subscribeToResult_1 = $__require('../util/subscribeToResult');
     /**
      * Catches errors on the observable to be handled by returning a new observable or throwing an error.
+     *
+     * <img src="./img/catch.png" width="100%">
+     *
+     * @example <caption>Continues with a different Observable when there's an error</caption>
+     *
+     * Observable.of(1, 2, 3, 4, 5)
+     *   .map(n => {
+     * 	   if (n == 4) {
+     * 	     throw 'four!';
+     *     }
+     *	   return n;
+     *   })
+     *   .catch(err => Observable.of('I', 'II', 'III', 'IV', 'V'))
+     *   .subscribe(x => console.log(x));
+     *   // 1, 2, 3, I, II, III, IV, V
+     *
+     * @example <caption>Retries the caught source Observable again in case of error, similar to retry() operator</caption>
+     *
+     * Observable.of(1, 2, 3, 4, 5)
+     *   .map(n => {
+     * 	   if (n === 4) {
+     * 	     throw 'four!';
+     *     }
+     * 	   return n;
+     *   })
+     *   .catch((err, caught) => caught)
+     *   .take(30)
+     *   .subscribe(x => console.log(x));
+     *   // 1, 2, 3, 1, 2, 3, ...
+     *
+     * @example <caption>Throws a new error when the source Observable throws an error</caption>
+     *
+     * Observable.of(1, 2, 3, 4, 5)
+     *   .map(n => {
+     *     if (n == 4) {
+     *       throw 'four!';
+     *     }
+     *     return n;
+     *   })
+     *   .catch(err => {
+     *     throw 'error in source. Details: ' + err;
+     *   })
+     *   .subscribe(
+     *     x => console.log(x),
+     *     err => console.log(err)
+     *   );
+     *   // 1, 2, 3, error in source. Details: four!
+     *
      * @param {function} selector a function that takes as arguments `err`, which is the error, and `caught`, which
      *  is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable
      *  is returned by the `selector` will be used to continue the observable chain.
@@ -40618,19 +40713,23 @@ System.registerDynamic('npm:rxjs/operator/catch.js', ['../OuterSubscriber', '../
             this.caught = caught;
         }
         // NOTE: overriding `error` instead of `_error` because we don't want
-        // to have this flag this subscriber as `isStopped`.
+        // to have this flag this subscriber as `isStopped`. We can mimic the
+        // behavior of the RetrySubscriber (from the `retry` operator), where
+        // we unsubscribe from our source chain, reset our Subscriber flags,
+        // then subscribe to the selector result.
         CatchSubscriber.prototype.error = function (err) {
             if (!this.isStopped) {
                 var result = void 0;
                 try {
                     result = this.selector(err, this.caught);
-                } catch (err) {
-                    this.destination.error(err);
+                } catch (err2) {
+                    _super.prototype.error.call(this, err2);
                     return;
                 }
                 this.unsubscribe();
-                this.destination.remove(this);
-                subscribeToResult_1.subscribeToResult(this, result);
+                this.closed = false;
+                this.isStopped = false;
+                this.add(subscribeToResult_1.subscribeToResult(this, result));
             }
         };
         return CatchSubscriber;
@@ -42176,6 +42275,13 @@ System.registerDynamic('npm:rxjs/Subject.js', ['./Observable', './Subscriber', '
             this.closed = true;
             this.observers = null;
         };
+        Subject.prototype._trySubscribe = function (subscriber) {
+            if (this.closed) {
+                throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            } else {
+                return _super.prototype._trySubscribe.call(this, subscriber);
+            }
+        };
         Subject.prototype._subscribe = function (subscriber) {
             if (this.closed) {
                 throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
@@ -42913,7 +43019,7 @@ System.registerDynamic('npm:rxjs/Observable.js', ['./util/root', './util/toSubsc
             if (operator) {
                 operator.call(sink, this.source);
             } else {
-                sink.add(this._subscribe(sink));
+                sink.add(this._trySubscribe(sink));
             }
             if (sink.syncErrorThrowable) {
                 sink.syncErrorThrowable = false;
@@ -42922,6 +43028,15 @@ System.registerDynamic('npm:rxjs/Observable.js', ['./util/root', './util/toSubsc
                 }
             }
             return sink;
+        };
+        Observable.prototype._trySubscribe = function (sink) {
+            try {
+                return this._subscribe(sink);
+            } catch (err) {
+                sink.syncErrorThrown = true;
+                sink.syncErrorValue = err;
+                sink.error(err);
+            }
         };
         /**
          * @method forEach
