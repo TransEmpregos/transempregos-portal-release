@@ -5,7 +5,7 @@ var define = System.amdDefine;
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core')) : typeof define === 'function' && define.amd ? define("npm:@angular/compiler/bundles/compiler.umd.js", ["exports", "@angular/core"], factory) : (factory((global.ng = global.ng || {}, global.ng.compiler = global.ng.compiler || {}), global.ng.core));
 }(this, function(exports, _angular_core) {
   'use strict';
-  var VERSION = new _angular_core.Version('2.4.5');
+  var VERSION = new _angular_core.Version('2.4.7');
   var TextAst = (function() {
     function TextAst(value, ngContentIndex, sourceSpan) {
       this.value = value;
@@ -3506,6 +3506,43 @@ var define = System.amdDefine;
       }
       return new ParseLocation(this.file, offset, line, col);
     };
+    ParseLocation.prototype.getContext = function(maxChars, maxLines) {
+      var content = this.file.content;
+      var startOffset = this.offset;
+      if (isPresent(startOffset)) {
+        if (startOffset > content.length - 1) {
+          startOffset = content.length - 1;
+        }
+        var endOffset = startOffset;
+        var ctxChars = 0;
+        var ctxLines = 0;
+        while (ctxChars < maxChars && startOffset > 0) {
+          startOffset--;
+          ctxChars++;
+          if (content[startOffset] == '\n') {
+            if (++ctxLines == maxLines) {
+              break;
+            }
+          }
+        }
+        ctxChars = 0;
+        ctxLines = 0;
+        while (ctxChars < maxChars && endOffset < content.length - 1) {
+          endOffset++;
+          ctxChars++;
+          if (content[endOffset] == '\n') {
+            if (++ctxLines == maxLines) {
+              break;
+            }
+          }
+        }
+        return {
+          before: content.substring(startOffset, this.offset),
+          after: content.substring(this.offset, endOffset + 1)
+        };
+      }
+      return null;
+    };
     return ParseLocation;
   }());
   var ParseSourceFile = (function() {
@@ -3544,43 +3581,9 @@ var define = System.amdDefine;
       this.level = level;
     }
     ParseError.prototype.toString = function() {
-      var source = this.span.start.file.content;
-      var ctxStart = this.span.start.offset;
-      var contextStr = '';
-      var details = '';
-      if (isPresent(ctxStart)) {
-        if (ctxStart > source.length - 1) {
-          ctxStart = source.length - 1;
-        }
-        var ctxEnd = ctxStart;
-        var ctxLen = 0;
-        var ctxLines = 0;
-        while (ctxLen < 100 && ctxStart > 0) {
-          ctxStart--;
-          ctxLen++;
-          if (source[ctxStart] == '\n') {
-            if (++ctxLines == 3) {
-              break;
-            }
-          }
-        }
-        ctxLen = 0;
-        ctxLines = 0;
-        while (ctxLen < 100 && ctxEnd < source.length - 1) {
-          ctxEnd++;
-          ctxLen++;
-          if (source[ctxEnd] == '\n') {
-            if (++ctxLines == 3) {
-              break;
-            }
-          }
-        }
-        var context = source.substring(ctxStart, this.span.start.offset) + '[ERROR ->]' + source.substring(this.span.start.offset, ctxEnd + 1);
-        contextStr = " (\"" + context + "\")";
-      }
-      if (this.span.details) {
-        details = ", " + this.span.details;
-      }
+      var ctx = this.span.start.getContext(100, 3);
+      var contextStr = ctx ? " (\"" + ctx.before + "[ERROR ->]" + ctx.after + "\")" : '';
+      var details = this.span.details ? ", " + this.span.details : '';
       return "" + this.msg + contextStr + ": " + this.span.start + details;
     };
     return ParseError;
@@ -5179,7 +5182,9 @@ var define = System.amdDefine;
           var message = _this._createI18nMessage([attr], meaning, '');
           var nodes = _this._translations.get(message);
           if (nodes) {
-            if (nodes[0] instanceof Text) {
+            if (nodes.length == 0) {
+              translatedAttributes.push(new Attribute$1(attr.name, '', attr.sourceSpan));
+            } else if (nodes[0] instanceof Text) {
               var value = ((nodes[0])).value;
               translatedAttributes.push(new Attribute$1(attr.name, value, attr.sourceSpan));
             } else {
@@ -8608,9 +8613,6 @@ var define = System.amdDefine;
     });
     return Array.from(map.values());
   }
-  function unimplemented$2() {
-    throw new Error('unimplemented');
-  }
   var CompilerConfig = (function() {
     function CompilerConfig(_a) {
       var _b = _a === void 0 ? {} : _a,
@@ -8646,48 +8648,12 @@ var define = System.amdDefine;
   }());
   var RenderTypes = (function() {
     function RenderTypes() {}
-    Object.defineProperty(RenderTypes.prototype, "renderer", {
-      get: function() {
-        return unimplemented$2();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderTypes.prototype, "renderText", {
-      get: function() {
-        return unimplemented$2();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderTypes.prototype, "renderElement", {
-      get: function() {
-        return unimplemented$2();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderTypes.prototype, "renderComment", {
-      get: function() {
-        return unimplemented$2();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderTypes.prototype, "renderNode", {
-      get: function() {
-        return unimplemented$2();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderTypes.prototype, "renderEvent", {
-      get: function() {
-        return unimplemented$2();
-      },
-      enumerable: true,
-      configurable: true
-    });
+    RenderTypes.prototype.renderer = function() {};
+    RenderTypes.prototype.renderText = function() {};
+    RenderTypes.prototype.renderElement = function() {};
+    RenderTypes.prototype.renderComment = function() {};
+    RenderTypes.prototype.renderNode = function() {};
+    RenderTypes.prototype.renderEvent = function() {};
     return RenderTypes;
   }());
   var DefaultRenderTypes = (function() {
@@ -9657,7 +9623,7 @@ var define = System.amdDefine;
     };
     DirectiveNormalizer.prototype.normalizeLoadedTemplate = function(prenomData, template, templateAbsUrl) {
       var interpolationConfig = InterpolationConfig.fromArray(prenomData.interpolation);
-      var rootNodesAndErrors = this._htmlParser.parse(template, stringify(prenomData.componentType), false, interpolationConfig);
+      var rootNodesAndErrors = this._htmlParser.parse(template, stringify(prenomData.componentType), true, interpolationConfig);
       if (rootNodesAndErrors.errors.length > 0) {
         var errorString = rootNodesAndErrors.errors.join('\n');
         throw new SyntaxError("Template parse errors:\n" + errorString);
@@ -9787,6 +9753,12 @@ var define = System.amdDefine;
       }
       return null;
     };
+    TemplatePreparseVisitor.prototype.visitExpansion = function(ast, context) {
+      visitAll(this, ast.cases);
+    };
+    TemplatePreparseVisitor.prototype.visitExpansionCase = function(ast, context) {
+      visitAll(this, ast.expression);
+    };
     TemplatePreparseVisitor.prototype.visitComment = function(ast, context) {
       return null;
     };
@@ -9794,12 +9766,6 @@ var define = System.amdDefine;
       return null;
     };
     TemplatePreparseVisitor.prototype.visitText = function(ast, context) {
-      return null;
-    };
-    TemplatePreparseVisitor.prototype.visitExpansion = function(ast, context) {
-      return null;
-    };
-    TemplatePreparseVisitor.prototype.visitExpansionCase = function(ast, context) {
       return null;
     };
     return TemplatePreparseVisitor;
@@ -12502,7 +12468,7 @@ var define = System.amdDefine;
     CompileMetadataResolver.prototype.getDirectiveMetadata = function(directiveType) {
       var dirMeta = this._directiveCache.get(directiveType);
       if (!dirMeta) {
-        this._reportError(new SyntaxError("Illegal state: getDirectiveMetadata can only be called after loadNgModuleMetadata for a module that declares it. Directive " + stringifyType(directiveType) + "."), directiveType);
+        this._reportError(new SyntaxError("Illegal state: getDirectiveMetadata can only be called after loadNgModuleDirectiveAndPipeMetadata for a module that declares it. Directive " + stringifyType(directiveType) + "."), directiveType);
       }
       return dirMeta;
     };
@@ -12812,7 +12778,7 @@ var define = System.amdDefine;
     CompileMetadataResolver.prototype.getPipeMetadata = function(pipeType) {
       var pipeMeta = this._pipeCache.get(pipeType);
       if (!pipeMeta) {
-        this._reportError(new SyntaxError("Illegal state: getPipeMetadata can only be called after loadNgModuleMetadata for a module that declares it. Pipe " + stringifyType(pipeType) + "."), pipeType);
+        this._reportError(new SyntaxError("Illegal state: getPipeMetadata can only be called after loadNgModuleDirectiveAndPipeMetadata for a module that declares it. Pipe " + stringifyType(pipeType) + "."), pipeType);
       }
       return pipeMeta;
     };
@@ -17651,7 +17617,7 @@ var define = System.amdDefine;
           if (e.fileName) {
             throw positionalError(message, e.fileName, e.line, e.column);
           }
-          throw new Error(message);
+          throw new SyntaxError(message);
         }
       }
       var recordedSimplifyInContext = function(context, value, depth) {
@@ -17994,7 +17960,8 @@ var define = System.amdDefine;
     StaticSymbolResolver.prototype.getSymbolByModule = function(module, symbolName, containingFile) {
       var filePath = this.resolveModule(module, containingFile);
       if (!filePath) {
-        throw new Error("Could not resolve module " + module + " relative to " + containingFile);
+        this.reportError(new Error("Could not resolve module " + module + (containingFile ? " relative to $ {\n            containingFile\n          } " : '')), null);
+        return this.getStaticSymbol("ERROR:" + module, symbolName);
       }
       return this.getStaticSymbol(filePath, symbolName);
     };
@@ -19115,6 +19082,7 @@ var define = System.amdDefine;
   var _NO_RESOURCE_LOADER = {get: function(url) {
       throw new Error("No ResourceLoader implementation has been provided. Can't read the url \"" + url + "\"");
     }};
+  var baseHtmlParser = new _angular_core.OpaqueToken('HtmlParser');
   var COMPILER_PROVIDERS = [{
     provide: Reflector,
     useValue: reflector
@@ -19124,12 +19092,18 @@ var define = System.amdDefine;
   }, {
     provide: ResourceLoader,
     useValue: _NO_RESOURCE_LOADER
-  }, SummaryResolver, Console, Lexer, Parser, HtmlParser, {
+  }, SummaryResolver, Console, Lexer, Parser, {
+    provide: baseHtmlParser,
+    useClass: HtmlParser
+  }, {
     provide: I18NHtmlParser,
     useFactory: function(parser, translations, format) {
       return new I18NHtmlParser(parser, translations, format);
     },
-    deps: [HtmlParser, [new _angular_core.Optional(), new _angular_core.Inject(_angular_core.TRANSLATIONS)], [new _angular_core.Optional(), new _angular_core.Inject(_angular_core.TRANSLATIONS_FORMAT)]]
+    deps: [baseHtmlParser, [new _angular_core.Optional(), new _angular_core.Inject(_angular_core.TRANSLATIONS)], [new _angular_core.Optional(), new _angular_core.Inject(_angular_core.TRANSLATIONS_FORMAT)]]
+  }, {
+    provide: HtmlParser,
+    useExisting: I18NHtmlParser
   }, TemplateParser, DirectiveNormalizer, CompileMetadataResolver, DEFAULT_PACKAGE_URL_PROVIDER, StyleCompiler, ViewCompiler, NgModuleCompiler, DirectiveWrapperCompiler, {
     provide: CompilerConfig,
     useValue: new CompilerConfig()
@@ -19464,7 +19438,7 @@ var define = System.amdDefine;
     INTERNAL_BROWSER_DYNAMIC_PLATFORM_PROVIDERS: INTERNAL_BROWSER_DYNAMIC_PLATFORM_PROVIDERS,
     ResourceLoaderImpl: ResourceLoaderImpl
   };
-  var VERSION = new _angular_core.Version('2.4.5');
+  var VERSION = new _angular_core.Version('2.4.7');
   var RESOURCE_CACHE_PROVIDER = [{
     provide: _angular_compiler.ResourceLoader,
     useClass: CachedResourceLoader
@@ -19531,7 +19505,9 @@ System.registerDynamic("dist/public/app/home/home.component.js", ["tslib", "@ang
     var core_1 = $__require("@angular/core");
     var HomeComponent = function () {
         function HomeComponent() {
-            this.areaFormHome = 'candidate';
+            this.CANDIDATE = 'candidate';
+            this.RECRUITER = 'recruiter';
+            this.areaFormHome = this.CANDIDATE;
         }
         HomeComponent.prototype.ngOnInit = function () {};
         HomeComponent.prototype.setAreaFormHome = function (role) {
@@ -19616,11 +19592,14 @@ System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", 
                 return _this.job = job;
             });
         };
-        JobEditComponent.prototype.save = function () {
+        JobEditComponent.prototype.save = function (form) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (form.invalid) {
+                                return [2 /*return*/];
+                            }
                             return [4 /*yield*/, this.jobService.updateAsync(this.job)];
                         case 1:
                             _a.sent();
@@ -20154,6 +20133,7 @@ var define = System.amdDefine;
     return ListWrapper;
   }());
   var isPromise = _angular_core.__core_private__.isPromise;
+  var isObservable = _angular_core.__core_private__.isObservable;
   function isEmptyInputValue(value) {
     return value == null || value.length === 0;
   }
@@ -20628,7 +20608,11 @@ var define = System.amdDefine;
     }
     SelectControlValueAccessor.prototype.writeValue = function(value) {
       this.value = value;
-      var valueString = _buildValueString(this._getOptionId(value), value);
+      var id = this._getOptionId(value);
+      if (id == null) {
+        this._renderer.setElementProperty(this._elementRef.nativeElement, 'selectedIndex', -1);
+      }
+      var valueString = _buildValueString(id, value);
       this._renderer.setElementProperty(this._elementRef.nativeElement, 'value', valueString);
     };
     SelectControlValueAccessor.prototype.registerOnChange = function(fn) {
@@ -21605,6 +21589,9 @@ var define = System.amdDefine;
         this._status = PENDING;
         this._cancelExistingSubscription();
         var obs = toObservable(this.asyncValidator(this));
+        if (!(isObservable(obs))) {
+          throw new Error("expected the following validator to return Promise or Observable: " + this.asyncValidator + ". If you are using FormBuilder; did you forget to brace your validators in an array?");
+        }
         this._asyncValidationSubscription = obs.subscribe({next: function(res) {
             return _this.setErrors(res, {emitEvent: emitEvent});
           }});
@@ -23479,7 +23466,7 @@ var define = System.amdDefine;
     };
     return FormBuilder;
   }());
-  var VERSION = new _angular_core.Version('2.4.5');
+  var VERSION = new _angular_core.Version('2.4.7');
   var SHARED_FORM_DIRECTIVES = [NgSelectOption, NgSelectMultipleOption, DefaultValueAccessor, NumberValueAccessor, RangeValueAccessor, CheckboxControlValueAccessor, SelectControlValueAccessor, SelectMultipleControlValueAccessor, RadioControlValueAccessor, NgControlStatus, NgControlStatusGroup, RequiredValidator, MinLengthValidator, MaxLengthValidator, PatternValidator, CheckboxRequiredValidator];
   var TEMPLATE_DRIVEN_DIRECTIVES = [NgModel, NgModelGroup, NgForm];
   var REACTIVE_DRIVEN_DIRECTIVES = [FormControlDirective, FormGroupDirective, FormControlName, FormGroupName, FormArrayName];
@@ -30341,6 +30328,8 @@ var define = System.amdDefine;
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/common'), require('@angular/core'), require('rxjs/BehaviorSubject'), require('rxjs/Subject'), require('rxjs/observable/from'), require('rxjs/observable/of'), require('rxjs/operator/concatMap'), require('rxjs/operator/every'), require('rxjs/operator/first'), require('rxjs/operator/map'), require('rxjs/operator/mergeMap'), require('rxjs/operator/reduce'), require('rxjs/Observable'), require('rxjs/operator/catch'), require('rxjs/operator/concatAll'), require('rxjs/util/EmptyError'), require('rxjs/observable/fromPromise'), require('rxjs/operator/last'), require('rxjs/operator/mergeAll'), require('@angular/platform-browser'), require('rxjs/operator/filter')) : typeof define === 'function' && define.amd ? define("npm:@angular/router/bundles/router.umd.js", ["exports", "@angular/common", "@angular/core", "rxjs/BehaviorSubject", "rxjs/Subject", "rxjs/observable/from", "rxjs/observable/of", "rxjs/operator/concatMap", "rxjs/operator/every", "rxjs/operator/first", "rxjs/operator/map", "rxjs/operator/mergeMap", "rxjs/operator/reduce", "rxjs/Observable", "rxjs/operator/catch", "rxjs/operator/concatAll", "rxjs/util/EmptyError", "rxjs/observable/fromPromise", "rxjs/operator/last", "rxjs/operator/mergeAll", "@angular/platform-browser", "rxjs/operator/filter"], factory) : (factory((global.ng = global.ng || {}, global.ng.router = global.ng.router || {}), global.ng.common, global.ng.core, global.Rx, global.Rx, global.Rx.Observable, global.Rx.Observable, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.Rx, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.Rx, global.Rx.Observable, global.Rx.Observable.prototype, global.Rx.Observable.prototype, global.ng.platformBrowser, global.Rx.Observable.prototype));
 }(this, function(exports, _angular_common, _angular_core, rxjs_BehaviorSubject, rxjs_Subject, rxjs_observable_from, rxjs_observable_of, rxjs_operator_concatMap, rxjs_operator_every, rxjs_operator_first, rxjs_operator_map, rxjs_operator_mergeMap, rxjs_operator_reduce, rxjs_Observable, rxjs_operator_catch, rxjs_operator_concatAll, rxjs_util_EmptyError, rxjs_observable_fromPromise, l, rxjs_operator_mergeAll, _angular_platformBrowser, rxjs_operator_filter) {
   'use strict';
+  var isPromise = _angular_core.__core_private__.isPromise;
+  var isObservable = _angular_core.__core_private__.isObservable;
   var __extends = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
@@ -30484,10 +30473,10 @@ var define = System.amdDefine;
     });
   }
   function wrapIntoObservable(value) {
-    if (value instanceof rxjs_Observable.Observable) {
+    if (isObservable(value)) {
       return value;
     }
-    if (value instanceof Promise) {
+    if (isPromise(value)) {
       return rxjs_observable_fromPromise.fromPromise(value);
     }
     return rxjs_observable_of.of(value);
@@ -32471,7 +32460,9 @@ var define = System.amdDefine;
     };
     Router.prototype.initialNavigation = function() {
       this.setUpLocationChangeListener();
-      this.navigateByUrl(this.location.path(true), {replaceUrl: true});
+      if (this.navigationId === 0) {
+        this.navigateByUrl(this.location.path(true), {replaceUrl: true});
+      }
     };
     Router.prototype.setUpLocationChangeListener = function() {
       var _this = this;
@@ -32742,8 +32733,8 @@ var define = System.amdDefine;
           new ActivateRoutes(_this.routeReuseStrategy, state, storedState).activate(_this.outletMap);
           navigationIsSuccessful = true;
         }).then(function() {
-          _this.navigated = true;
           if (navigationIsSuccessful) {
+            _this.navigated = true;
             _this.routerEvents.next(new NavigationEnd(id, _this.serializeUrl(url), _this.serializeUrl(_this.currentUrlTree)));
             resolvePromise(true);
           } else {
@@ -32932,7 +32923,7 @@ var define = System.amdDefine;
       });
       return andObservables(rxjs_operator_map.map.call(rxjs_observable_from.from(canActivateChildGuards), function(d) {
         var obs = rxjs_operator_map.map.call(rxjs_observable_from.from(d.guards), function(c) {
-          var guard = _this.getToken(c, c.node);
+          var guard = _this.getToken(c, d.node);
           var observable;
           if (guard.canActivateChild) {
             observable = wrapIntoObservable(guard.canActivateChild(future, _this.future));
@@ -33785,7 +33776,7 @@ var define = System.amdDefine;
       useExisting: ROUTER_INITIALIZER
     }];
   }
-  var VERSION = new _angular_core.Version('3.4.5');
+  var VERSION = new _angular_core.Version('3.4.7');
   var __router_private__ = {
     ROUTER_PROVIDERS: ROUTER_PROVIDERS,
     ROUTES: ROUTES,
@@ -34112,9 +34103,6 @@ var define = System.amdDefine;
   }
   function isBlank(obj) {
     return obj == null;
-  }
-  function isDate(obj) {
-    return obj instanceof Date && !isNaN(obj.valueOf());
   }
   function stringify(token) {
     if (typeof token === 'string') {
@@ -35443,6 +35431,7 @@ var define = System.amdDefine;
   }());
   var COMMON_DIRECTIVES = [NgClass, NgFor, NgIf, NgTemplateOutlet, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgPlural, NgPluralCase];
   var isPromise = _angular_core.__core_private__.isPromise;
+  var isObservable = _angular_core.__core_private__.isObservable;
   var __extends$4 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
@@ -35597,7 +35586,7 @@ var define = System.amdDefine;
       if (isPromise(obj)) {
         return _promiseStrategy;
       }
-      if (((obj)).subscribe) {
+      if (isObservable(obj)) {
         return _observableStrategy;
       }
       throw new InvalidPipeArgumentError(AsyncPipe, obj);
@@ -35801,6 +35790,7 @@ var define = System.amdDefine;
     };
     return DateFormatter;
   }());
+  var ISO8601_DATE_REGEX = /^(\d{4})-?(\d\d)-?(\d\d)(?:T(\d\d)(?::?(\d\d)(?::?(\d\d)(?:\.(\d+))?)?)?(Z|([+-])(\d\d):?(\d\d))?)?$/;
   var DatePipe = (function() {
     function DatePipe(_locale) {
       this._locale = _locale;
@@ -35810,7 +35800,7 @@ var define = System.amdDefine;
         pattern = 'mediumDate';
       }
       var date;
-      if (isBlank$1(value))
+      if (isBlank$1(value) || value !== value)
         return null;
       if (typeof value === 'string') {
         value = value.trim();
@@ -35831,7 +35821,12 @@ var define = System.amdDefine;
         date = new Date(value);
       }
       if (!isDate(date)) {
-        throw new InvalidPipeArgumentError(DatePipe, value);
+        var match = void 0;
+        if ((typeof value === 'string') && (match = value.match(ISO8601_DATE_REGEX))) {
+          date = isoStringToDate(match);
+        } else {
+          throw new InvalidPipeArgumentError(DatePipe, value);
+        }
       }
       return DateFormatter.format(date, this._locale, DatePipe._ALIASES[pattern] || pattern);
     };
@@ -35865,6 +35860,30 @@ var define = System.amdDefine;
   }());
   function isBlank$1(obj) {
     return obj == null || obj === '';
+  }
+  function isDate(obj) {
+    return obj instanceof Date && !isNaN(obj.valueOf());
+  }
+  function isoStringToDate(match) {
+    var date = new Date(0);
+    var tzHour = 0;
+    var tzMin = 0;
+    var dateSetter = match[8] ? date.setUTCFullYear : date.setFullYear;
+    var timeSetter = match[8] ? date.setUTCHours : date.setHours;
+    if (match[9]) {
+      tzHour = toInt(match[9] + match[10]);
+      tzMin = toInt(match[9] + match[11]);
+    }
+    dateSetter.call(date, toInt(match[1]), toInt(match[2]) - 1, toInt(match[3]));
+    var h = toInt(match[4] || '0') - tzHour;
+    var m = toInt(match[5] || '0') - tzMin;
+    var s = toInt(match[6] || '0');
+    var ms = Math.round(parseFloat('0.' + (match[7] || 0)) * 1000);
+    timeSetter.call(date, h, m, s, ms);
+    return date;
+  }
+  function toInt(str) {
+    return parseInt(str, 10);
   }
   var _INTERPOLATION_REGEXP = /#/g;
   var I18nPluralPipe = (function() {
@@ -36145,7 +36164,7 @@ var define = System.amdDefine;
     };
     return CommonModule;
   }());
-  var VERSION = new _angular_core.Version('2.4.5');
+  var VERSION = new _angular_core.Version('2.4.7');
   exports.NgLocalization = NgLocalization;
   exports.CommonModule = CommonModule;
   exports.NgClass = NgClass;
@@ -37495,24 +37514,22 @@ var define = System.amdDefine;
   };
   var SharedStylesHost = (function() {
     function SharedStylesHost() {
-      this._styles = [];
       this._stylesSet = new Set();
     }
     SharedStylesHost.prototype.addStyles = function(styles) {
       var _this = this;
-      var additions = [];
+      var additions = new Set();
       styles.forEach(function(style) {
         if (!_this._stylesSet.has(style)) {
           _this._stylesSet.add(style);
-          _this._styles.push(style);
-          additions.push(style);
+          additions.add(style);
         }
       });
       this.onStylesAdded(additions);
     };
     SharedStylesHost.prototype.onStylesAdded = function(additions) {};
     SharedStylesHost.prototype.getAllStyles = function() {
-      return this._styles;
+      return Array.from(this._stylesSet);
     };
     SharedStylesHost.decorators = [{type: core.Injectable}];
     SharedStylesHost.ctorParameters = function() {
@@ -37522,20 +37539,23 @@ var define = System.amdDefine;
   }());
   var DomSharedStylesHost = (function(_super) {
     __extends$4(DomSharedStylesHost, _super);
-    function DomSharedStylesHost(doc) {
+    function DomSharedStylesHost(_doc) {
       _super.call(this);
+      this._doc = _doc;
       this._hostNodes = new Set();
-      this._hostNodes.add(doc.head);
+      this._styleNodes = new Set();
+      this._hostNodes.add(_doc.head);
     }
     DomSharedStylesHost.prototype._addStylesToHost = function(styles, host) {
-      for (var i = 0; i < styles.length; i++) {
-        var styleEl = document.createElement('style');
-        styleEl.textContent = styles[i];
-        host.appendChild(styleEl);
-      }
+      var _this = this;
+      styles.forEach(function(style) {
+        var styleEl = _this._doc.createElement('style');
+        styleEl.textContent = style;
+        _this._styleNodes.add(host.appendChild(styleEl));
+      });
     };
     DomSharedStylesHost.prototype.addHost = function(hostNode) {
-      this._addStylesToHost(this._styles, hostNode);
+      this._addStylesToHost(this._stylesSet, hostNode);
       this._hostNodes.add(hostNode);
     };
     DomSharedStylesHost.prototype.removeHost = function(hostNode) {
@@ -37544,7 +37564,12 @@ var define = System.amdDefine;
     DomSharedStylesHost.prototype.onStylesAdded = function(additions) {
       var _this = this;
       this._hostNodes.forEach(function(hostNode) {
-        _this._addStylesToHost(additions, hostNode);
+        return _this._addStylesToHost(additions, hostNode);
+      });
+    };
+    DomSharedStylesHost.prototype.ngOnDestroy = function() {
+      this._styleNodes.forEach(function(styleNode) {
+        return getDOM().remove(styleNode);
       });
     };
     DomSharedStylesHost.decorators = [{type: core.Injectable}];
@@ -38716,7 +38741,7 @@ var define = System.amdDefine;
     BROWSER_SANITIZATION_PROVIDERS: BROWSER_SANITIZATION_PROVIDERS,
     WebAnimationsDriver: WebAnimationsDriver
   };
-  var VERSION = new core.Version('2.4.5');
+  var VERSION = new core.Version('2.4.7');
   exports.BrowserModule = BrowserModule;
   exports.platformBrowser = platformBrowser;
   exports.Title = Title;
@@ -39242,7 +39267,7 @@ var define = System.amdDefine;
       return "__req" + _nextRequestId++;
     };
     BrowserJsonp.prototype.requestCallback = function(id) {
-      return JSONP_HOME + "." + id + ".finished";
+      return "" + JSONP_HOME + id + "_finished";
     };
     BrowserJsonp.prototype.exposeConnection = function(id, connection) {
       var connections = _getJsonpConnections();
@@ -39847,7 +39872,7 @@ var define = System.amdDefine;
     };
     return JsonpModule;
   }());
-  var VERSION = new _angular_core.Version('2.4.5');
+  var VERSION = new _angular_core.Version('2.4.7');
   exports.BrowserXhr = BrowserXhr;
   exports.JSONPBackend = JSONPBackend;
   exports.JSONPConnection = JSONPConnection;
@@ -40108,13 +40133,30 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
 
     
 });
-System.registerDynamic("dist/public/app/job.js", [], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/contact.js", [], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
+    var Contact = function () {
+        function Contact() {}
+        return Contact;
+    }();
+    exports.Contact = Contact;
+
+    
+});
+System.registerDynamic("dist/public/app/job.js", ["./contact"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var contact_1 = $__require("./contact");
     var Job = function () {
-        function Job() {}
+        function Job() {
+            this.contact = new contact_1.Contact();
+        }
+        ;
         return Job;
     }();
     exports.Job = Job;
@@ -40135,13 +40177,18 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib"
         function JobCreateComponent(jobService, router) {
             this.jobService = jobService;
             this.router = router;
-            this.job = new job_1.Job();
         }
-        JobCreateComponent.prototype.save = function () {
+        JobCreateComponent.prototype.ngOnInit = function () {
+            this.job = new job_1.Job();
+        };
+        JobCreateComponent.prototype.save = function (form) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
+                            if (form.invalid) {
+                                return [2 /*return*/];
+                            }
                             return [4 /*yield*/, this.jobService.createAsync(this.job)];
                         case 1:
                             _a.sent();
@@ -43114,8 +43161,8 @@ System.registerDynamic('npm:rxjs/Observable.js', ['./util/root', './util/toSubsc
 (function() {
 var define = System.amdDefine;
 (function(global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('rxjs/Subject'), require('rxjs/Observable')) : typeof define === 'function' && define.amd ? define("npm:@angular/core/bundles/core.umd.js", ["exports", "rxjs/Subject", "rxjs/Observable"], factory) : (factory((global.ng = global.ng || {}, global.ng.core = global.ng.core || {}), global.Rx, global.Rx));
-}(this, function(exports, rxjs_Subject, rxjs_Observable) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('rxjs/symbol/observable'), require('rxjs/Subject'), require('rxjs/Observable')) : typeof define === 'function' && define.amd ? define("npm:@angular/core/bundles/core.umd.js", ["exports", "rxjs/symbol/observable", "rxjs/Subject", "rxjs/Observable"], factory) : (factory((global.ng = global.ng || {}, global.ng.core = global.ng.core || {}), global.rxjs_symbol_observable, global.Rx, global.Rx));
+}(this, function(exports, rxjs_symbol_observable, rxjs_Subject, rxjs_Observable) {
   'use strict';
   var globalScope;
   if (typeof window === 'undefined') {
@@ -43611,7 +43658,7 @@ var define = System.amdDefine;
     });
     return Version;
   }());
-  var VERSION = new Version('2.4.5');
+  var VERSION = new Version('2.4.7');
   function forwardRef(forwardRefFn) {
     ((forwardRefFn)).__forward_ref__ = forwardRef;
     ((forwardRefFn)).toString = function() {
@@ -43626,7 +43673,29 @@ var define = System.amdDefine;
       return type;
     }
   }
-  var __extends = (this && this.__extends) || function(d, b) {
+  var _THROW_IF_NOT_FOUND = new Object();
+  var THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
+  var _NullInjector = (function() {
+    function _NullInjector() {}
+    _NullInjector.prototype.get = function(token, notFoundValue) {
+      if (notFoundValue === void 0) {
+        notFoundValue = _THROW_IF_NOT_FOUND;
+      }
+      if (notFoundValue === _THROW_IF_NOT_FOUND) {
+        throw new Error("No provider for " + stringify(token) + "!");
+      }
+      return notFoundValue;
+    };
+    return _NullInjector;
+  }());
+  var Injector = (function() {
+    function Injector() {}
+    Injector.prototype.get = function(token, notFoundValue) {};
+    Injector.THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
+    Injector.NULL = new _NullInjector();
+    return Injector;
+  }());
+  var __extends$1 = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -43635,11 +43704,8 @@ var define = System.amdDefine;
     }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
-  function unimplemented() {
-    throw new Error('unimplemented');
-  }
   var BaseError = (function(_super) {
-    __extends(BaseError, _super);
+    __extends$1(BaseError, _super);
     function BaseError(message) {
       _super.call(this, message);
       var nativeError = new Error(message);
@@ -43678,7 +43744,7 @@ var define = System.amdDefine;
     return BaseError;
   }(Error));
   var WrappedError = (function(_super) {
-    __extends(WrappedError, _super);
+    __extends$1(WrappedError, _super);
     function WrappedError(message, error) {
       _super.call(this, message + " caused by: " + (error instanceof Error ? error.message : error));
       this.originalError = error;
@@ -43692,31 +43758,7 @@ var define = System.amdDefine;
     });
     return WrappedError;
   }(BaseError));
-  var _THROW_IF_NOT_FOUND = new Object();
-  var THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
-  var _NullInjector = (function() {
-    function _NullInjector() {}
-    _NullInjector.prototype.get = function(token, notFoundValue) {
-      if (notFoundValue === void 0) {
-        notFoundValue = _THROW_IF_NOT_FOUND;
-      }
-      if (notFoundValue === _THROW_IF_NOT_FOUND) {
-        throw new Error("No provider for " + stringify(token) + "!");
-      }
-      return notFoundValue;
-    };
-    return _NullInjector;
-  }());
-  var Injector = (function() {
-    function Injector() {}
-    Injector.prototype.get = function(token, notFoundValue) {
-      return unimplemented();
-    };
-    Injector.THROW_IF_NOT_FOUND = _THROW_IF_NOT_FOUND;
-    Injector.NULL = new _NullInjector();
-    return Injector;
-  }());
-  var __extends$1 = (this && this.__extends) || function(d, b) {
+  var __extends = (this && this.__extends) || function(d, b) {
     for (var p in b)
       if (b.hasOwnProperty(p))
         d[p] = b[p];
@@ -43747,7 +43789,7 @@ var define = System.amdDefine;
     return '';
   }
   var AbstractProviderError = (function(_super) {
-    __extends$1(AbstractProviderError, _super);
+    __extends(AbstractProviderError, _super);
     function AbstractProviderError(injector, key, constructResolvingMessage) {
       _super.call(this, 'DI Error');
       this.keys = [key];
@@ -43763,7 +43805,7 @@ var define = System.amdDefine;
     return AbstractProviderError;
   }(BaseError));
   var NoProviderError = (function(_super) {
-    __extends$1(NoProviderError, _super);
+    __extends(NoProviderError, _super);
     function NoProviderError(injector, key) {
       _super.call(this, injector, key, function(keys) {
         var first = stringify(keys[0].token);
@@ -43773,7 +43815,7 @@ var define = System.amdDefine;
     return NoProviderError;
   }(AbstractProviderError));
   var CyclicDependencyError = (function(_super) {
-    __extends$1(CyclicDependencyError, _super);
+    __extends(CyclicDependencyError, _super);
     function CyclicDependencyError(injector, key) {
       _super.call(this, injector, key, function(keys) {
         return "Cannot instantiate cyclic dependency!" + constructResolvingPath(keys);
@@ -43782,7 +43824,7 @@ var define = System.amdDefine;
     return CyclicDependencyError;
   }(AbstractProviderError));
   var InstantiationError = (function(_super) {
-    __extends$1(InstantiationError, _super);
+    __extends(InstantiationError, _super);
     function InstantiationError(injector, originalException, originalStack, key) {
       _super.call(this, 'DI Error', originalException);
       this.keys = [key];
@@ -43810,14 +43852,14 @@ var define = System.amdDefine;
     return InstantiationError;
   }(WrappedError));
   var InvalidProviderError = (function(_super) {
-    __extends$1(InvalidProviderError, _super);
+    __extends(InvalidProviderError, _super);
     function InvalidProviderError(provider) {
       _super.call(this, "Invalid provider - only instances of Provider and Type are allowed, got: " + provider);
     }
     return InvalidProviderError;
   }(BaseError));
   var NoAnnotationError = (function(_super) {
-    __extends$1(NoAnnotationError, _super);
+    __extends(NoAnnotationError, _super);
     function NoAnnotationError(typeOrFunc, params) {
       _super.call(this, NoAnnotationError._genMessage(typeOrFunc, params));
     }
@@ -43837,14 +43879,14 @@ var define = System.amdDefine;
     return NoAnnotationError;
   }(BaseError));
   var OutOfBoundsError = (function(_super) {
-    __extends$1(OutOfBoundsError, _super);
+    __extends(OutOfBoundsError, _super);
     function OutOfBoundsError(index) {
       _super.call(this, "Index " + index + " is out-of-bounds.");
     }
     return OutOfBoundsError;
   }(BaseError));
   var MixingMultiProvidersWithRegularProvidersError = (function(_super) {
-    __extends$1(MixingMultiProvidersWithRegularProvidersError, _super);
+    __extends(MixingMultiProvidersWithRegularProvidersError, _super);
     function MixingMultiProvidersWithRegularProvidersError(provider1, provider2) {
       _super.call(this, 'Cannot mix multi providers and regular providers, got: ' + provider1.toString() + ' ' + provider2.toString());
     }
@@ -44158,15 +44200,13 @@ var define = System.amdDefine;
   }(ReflectorReader));
   var reflector = new Reflector(new ReflectionCapabilities());
   var ReflectiveDependency = (function() {
-    function ReflectiveDependency(key, optional, lowerBoundVisibility, upperBoundVisibility, properties) {
+    function ReflectiveDependency(key, optional, visibility) {
       this.key = key;
       this.optional = optional;
-      this.lowerBoundVisibility = lowerBoundVisibility;
-      this.upperBoundVisibility = upperBoundVisibility;
-      this.properties = properties;
+      this.visibility = visibility;
     }
     ReflectiveDependency.fromKey = function(key) {
-      return new ReflectiveDependency(key, false, null, null, []);
+      return new ReflectiveDependency(key, false, null);
     };
     return ReflectiveDependency;
   }());
@@ -44295,18 +44335,16 @@ var define = System.amdDefine;
     });
   }
   function _extractToken(typeOrFunc, metadata, params) {
-    var depProps = [];
     var token = null;
     var optional = false;
     if (!Array.isArray(metadata)) {
       if (metadata instanceof Inject) {
-        return _createDependency(metadata.token, optional, null, null, depProps);
+        return _createDependency(metadata.token, optional, null);
       } else {
-        return _createDependency(metadata, optional, null, null, depProps);
+        return _createDependency(metadata, optional, null);
       }
     }
-    var lowerBoundVisibility = null;
-    var upperBoundVisibility = null;
+    var visibility = null;
     for (var i = 0; i < metadata.length; ++i) {
       var paramMetadata = metadata[i];
       if (paramMetadata instanceof Type) {
@@ -44315,300 +44353,21 @@ var define = System.amdDefine;
         token = paramMetadata.token;
       } else if (paramMetadata instanceof Optional) {
         optional = true;
-      } else if (paramMetadata instanceof Self) {
-        upperBoundVisibility = paramMetadata;
-      } else if (paramMetadata instanceof Host) {
-        upperBoundVisibility = paramMetadata;
-      } else if (paramMetadata instanceof SkipSelf) {
-        lowerBoundVisibility = paramMetadata;
+      } else if (paramMetadata instanceof Self || paramMetadata instanceof SkipSelf) {
+        visibility = paramMetadata;
       }
     }
     token = resolveForwardRef(token);
     if (token != null) {
-      return _createDependency(token, optional, lowerBoundVisibility, upperBoundVisibility, depProps);
+      return _createDependency(token, optional, visibility);
     } else {
       throw new NoAnnotationError(typeOrFunc, params);
     }
   }
-  function _createDependency(token, optional, lowerBoundVisibility, upperBoundVisibility, depProps) {
-    return new ReflectiveDependency(ReflectiveKey.get(token), optional, lowerBoundVisibility, upperBoundVisibility, depProps);
+  function _createDependency(token, optional, visibility) {
+    return new ReflectiveDependency(ReflectiveKey.get(token), optional, visibility);
   }
-  var _MAX_CONSTRUCTION_COUNTER = 10;
   var UNDEFINED = new Object();
-  var ReflectiveProtoInjectorInlineStrategy = (function() {
-    function ReflectiveProtoInjectorInlineStrategy(protoEI, providers) {
-      this.provider0 = null;
-      this.provider1 = null;
-      this.provider2 = null;
-      this.provider3 = null;
-      this.provider4 = null;
-      this.provider5 = null;
-      this.provider6 = null;
-      this.provider7 = null;
-      this.provider8 = null;
-      this.provider9 = null;
-      this.keyId0 = null;
-      this.keyId1 = null;
-      this.keyId2 = null;
-      this.keyId3 = null;
-      this.keyId4 = null;
-      this.keyId5 = null;
-      this.keyId6 = null;
-      this.keyId7 = null;
-      this.keyId8 = null;
-      this.keyId9 = null;
-      var length = providers.length;
-      if (length > 0) {
-        this.provider0 = providers[0];
-        this.keyId0 = providers[0].key.id;
-      }
-      if (length > 1) {
-        this.provider1 = providers[1];
-        this.keyId1 = providers[1].key.id;
-      }
-      if (length > 2) {
-        this.provider2 = providers[2];
-        this.keyId2 = providers[2].key.id;
-      }
-      if (length > 3) {
-        this.provider3 = providers[3];
-        this.keyId3 = providers[3].key.id;
-      }
-      if (length > 4) {
-        this.provider4 = providers[4];
-        this.keyId4 = providers[4].key.id;
-      }
-      if (length > 5) {
-        this.provider5 = providers[5];
-        this.keyId5 = providers[5].key.id;
-      }
-      if (length > 6) {
-        this.provider6 = providers[6];
-        this.keyId6 = providers[6].key.id;
-      }
-      if (length > 7) {
-        this.provider7 = providers[7];
-        this.keyId7 = providers[7].key.id;
-      }
-      if (length > 8) {
-        this.provider8 = providers[8];
-        this.keyId8 = providers[8].key.id;
-      }
-      if (length > 9) {
-        this.provider9 = providers[9];
-        this.keyId9 = providers[9].key.id;
-      }
-    }
-    ReflectiveProtoInjectorInlineStrategy.prototype.getProviderAtIndex = function(index) {
-      if (index == 0)
-        return this.provider0;
-      if (index == 1)
-        return this.provider1;
-      if (index == 2)
-        return this.provider2;
-      if (index == 3)
-        return this.provider3;
-      if (index == 4)
-        return this.provider4;
-      if (index == 5)
-        return this.provider5;
-      if (index == 6)
-        return this.provider6;
-      if (index == 7)
-        return this.provider7;
-      if (index == 8)
-        return this.provider8;
-      if (index == 9)
-        return this.provider9;
-      throw new OutOfBoundsError(index);
-    };
-    ReflectiveProtoInjectorInlineStrategy.prototype.createInjectorStrategy = function(injector) {
-      return new ReflectiveInjectorInlineStrategy(injector, this);
-    };
-    return ReflectiveProtoInjectorInlineStrategy;
-  }());
-  var ReflectiveProtoInjectorDynamicStrategy = (function() {
-    function ReflectiveProtoInjectorDynamicStrategy(protoInj, providers) {
-      this.providers = providers;
-      var len = providers.length;
-      this.keyIds = new Array(len);
-      for (var i = 0; i < len; i++) {
-        this.keyIds[i] = providers[i].key.id;
-      }
-    }
-    ReflectiveProtoInjectorDynamicStrategy.prototype.getProviderAtIndex = function(index) {
-      if (index < 0 || index >= this.providers.length) {
-        throw new OutOfBoundsError(index);
-      }
-      return this.providers[index];
-    };
-    ReflectiveProtoInjectorDynamicStrategy.prototype.createInjectorStrategy = function(ei) {
-      return new ReflectiveInjectorDynamicStrategy(this, ei);
-    };
-    return ReflectiveProtoInjectorDynamicStrategy;
-  }());
-  var ReflectiveProtoInjector = (function() {
-    function ReflectiveProtoInjector(providers) {
-      this.numberOfProviders = providers.length;
-      this._strategy = providers.length > _MAX_CONSTRUCTION_COUNTER ? new ReflectiveProtoInjectorDynamicStrategy(this, providers) : new ReflectiveProtoInjectorInlineStrategy(this, providers);
-    }
-    ReflectiveProtoInjector.fromResolvedProviders = function(providers) {
-      return new ReflectiveProtoInjector(providers);
-    };
-    ReflectiveProtoInjector.prototype.getProviderAtIndex = function(index) {
-      return this._strategy.getProviderAtIndex(index);
-    };
-    return ReflectiveProtoInjector;
-  }());
-  var ReflectiveInjectorInlineStrategy = (function() {
-    function ReflectiveInjectorInlineStrategy(injector, protoStrategy) {
-      this.injector = injector;
-      this.protoStrategy = protoStrategy;
-      this.obj0 = UNDEFINED;
-      this.obj1 = UNDEFINED;
-      this.obj2 = UNDEFINED;
-      this.obj3 = UNDEFINED;
-      this.obj4 = UNDEFINED;
-      this.obj5 = UNDEFINED;
-      this.obj6 = UNDEFINED;
-      this.obj7 = UNDEFINED;
-      this.obj8 = UNDEFINED;
-      this.obj9 = UNDEFINED;
-    }
-    ReflectiveInjectorInlineStrategy.prototype.resetConstructionCounter = function() {
-      this.injector._constructionCounter = 0;
-    };
-    ReflectiveInjectorInlineStrategy.prototype.instantiateProvider = function(provider) {
-      return this.injector._new(provider);
-    };
-    ReflectiveInjectorInlineStrategy.prototype.getObjByKeyId = function(keyId) {
-      var p = this.protoStrategy;
-      var inj = this.injector;
-      if (p.keyId0 === keyId) {
-        if (this.obj0 === UNDEFINED) {
-          this.obj0 = inj._new(p.provider0);
-        }
-        return this.obj0;
-      }
-      if (p.keyId1 === keyId) {
-        if (this.obj1 === UNDEFINED) {
-          this.obj1 = inj._new(p.provider1);
-        }
-        return this.obj1;
-      }
-      if (p.keyId2 === keyId) {
-        if (this.obj2 === UNDEFINED) {
-          this.obj2 = inj._new(p.provider2);
-        }
-        return this.obj2;
-      }
-      if (p.keyId3 === keyId) {
-        if (this.obj3 === UNDEFINED) {
-          this.obj3 = inj._new(p.provider3);
-        }
-        return this.obj3;
-      }
-      if (p.keyId4 === keyId) {
-        if (this.obj4 === UNDEFINED) {
-          this.obj4 = inj._new(p.provider4);
-        }
-        return this.obj4;
-      }
-      if (p.keyId5 === keyId) {
-        if (this.obj5 === UNDEFINED) {
-          this.obj5 = inj._new(p.provider5);
-        }
-        return this.obj5;
-      }
-      if (p.keyId6 === keyId) {
-        if (this.obj6 === UNDEFINED) {
-          this.obj6 = inj._new(p.provider6);
-        }
-        return this.obj6;
-      }
-      if (p.keyId7 === keyId) {
-        if (this.obj7 === UNDEFINED) {
-          this.obj7 = inj._new(p.provider7);
-        }
-        return this.obj7;
-      }
-      if (p.keyId8 === keyId) {
-        if (this.obj8 === UNDEFINED) {
-          this.obj8 = inj._new(p.provider8);
-        }
-        return this.obj8;
-      }
-      if (p.keyId9 === keyId) {
-        if (this.obj9 === UNDEFINED) {
-          this.obj9 = inj._new(p.provider9);
-        }
-        return this.obj9;
-      }
-      return UNDEFINED;
-    };
-    ReflectiveInjectorInlineStrategy.prototype.getObjAtIndex = function(index) {
-      if (index == 0)
-        return this.obj0;
-      if (index == 1)
-        return this.obj1;
-      if (index == 2)
-        return this.obj2;
-      if (index == 3)
-        return this.obj3;
-      if (index == 4)
-        return this.obj4;
-      if (index == 5)
-        return this.obj5;
-      if (index == 6)
-        return this.obj6;
-      if (index == 7)
-        return this.obj7;
-      if (index == 8)
-        return this.obj8;
-      if (index == 9)
-        return this.obj9;
-      throw new OutOfBoundsError(index);
-    };
-    ReflectiveInjectorInlineStrategy.prototype.getMaxNumberOfObjects = function() {
-      return _MAX_CONSTRUCTION_COUNTER;
-    };
-    return ReflectiveInjectorInlineStrategy;
-  }());
-  var ReflectiveInjectorDynamicStrategy = (function() {
-    function ReflectiveInjectorDynamicStrategy(protoStrategy, injector) {
-      this.protoStrategy = protoStrategy;
-      this.injector = injector;
-      this.objs = new Array(protoStrategy.providers.length).fill(UNDEFINED);
-    }
-    ReflectiveInjectorDynamicStrategy.prototype.resetConstructionCounter = function() {
-      this.injector._constructionCounter = 0;
-    };
-    ReflectiveInjectorDynamicStrategy.prototype.instantiateProvider = function(provider) {
-      return this.injector._new(provider);
-    };
-    ReflectiveInjectorDynamicStrategy.prototype.getObjByKeyId = function(keyId) {
-      var p = this.protoStrategy;
-      for (var i = 0; i < p.keyIds.length; i++) {
-        if (p.keyIds[i] === keyId) {
-          if (this.objs[i] === UNDEFINED) {
-            this.objs[i] = this.injector._new(p.providers[i]);
-          }
-          return this.objs[i];
-        }
-      }
-      return UNDEFINED;
-    };
-    ReflectiveInjectorDynamicStrategy.prototype.getObjAtIndex = function(index) {
-      if (index < 0 || index >= this.objs.length) {
-        throw new OutOfBoundsError(index);
-      }
-      return this.objs[index];
-    };
-    ReflectiveInjectorDynamicStrategy.prototype.getMaxNumberOfObjects = function() {
-      return this.objs.length;
-    };
-    return ReflectiveInjectorDynamicStrategy;
-  }());
   var ReflectiveInjector = (function() {
     function ReflectiveInjector() {}
     ReflectiveInjector.resolve = function(providers) {
@@ -44625,59 +44384,41 @@ var define = System.amdDefine;
       if (parent === void 0) {
         parent = null;
       }
-      return new ReflectiveInjector_(ReflectiveProtoInjector.fromResolvedProviders(providers), parent);
+      return new ReflectiveInjector_(providers, parent);
     };
-    Object.defineProperty(ReflectiveInjector.prototype, "parent", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ReflectiveInjector.prototype.resolveAndCreateChild = function(providers) {
-      return unimplemented();
-    };
-    ReflectiveInjector.prototype.createChildFromResolved = function(providers) {
-      return unimplemented();
-    };
-    ReflectiveInjector.prototype.resolveAndInstantiate = function(provider) {
-      return unimplemented();
-    };
-    ReflectiveInjector.prototype.instantiateResolved = function(provider) {
-      return unimplemented();
-    };
+    ReflectiveInjector.prototype.parent = function() {};
+    ReflectiveInjector.prototype.resolveAndCreateChild = function(providers) {};
+    ReflectiveInjector.prototype.createChildFromResolved = function(providers) {};
+    ReflectiveInjector.prototype.resolveAndInstantiate = function(provider) {};
+    ReflectiveInjector.prototype.instantiateResolved = function(provider) {};
     ReflectiveInjector.prototype.get = function(token, notFoundValue) {};
     return ReflectiveInjector;
   }());
   var ReflectiveInjector_ = (function() {
-    function ReflectiveInjector_(_proto, _parent) {
+    function ReflectiveInjector_(_providers, _parent) {
       if (_parent === void 0) {
         _parent = null;
       }
       this._constructionCounter = 0;
-      this._proto = _proto;
+      this._providers = _providers;
       this._parent = _parent;
-      this._strategy = _proto._strategy.createInjectorStrategy(this);
+      var len = _providers.length;
+      this.keyIds = new Array(len);
+      this.objs = new Array(len);
+      for (var i = 0; i < len; i++) {
+        this.keyIds[i] = _providers[i].key.id;
+        this.objs[i] = UNDEFINED;
+      }
     }
     ReflectiveInjector_.prototype.get = function(token, notFoundValue) {
       if (notFoundValue === void 0) {
         notFoundValue = THROW_IF_NOT_FOUND;
       }
-      return this._getByKey(ReflectiveKey.get(token), null, null, notFoundValue);
-    };
-    ReflectiveInjector_.prototype.getAt = function(index) {
-      return this._strategy.getObjAtIndex(index);
+      return this._getByKey(ReflectiveKey.get(token), null, notFoundValue);
     };
     Object.defineProperty(ReflectiveInjector_.prototype, "parent", {
       get: function() {
         return this._parent;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ReflectiveInjector_.prototype, "internalStrategy", {
-      get: function() {
-        return this._strategy;
       },
       enumerable: true,
       configurable: true
@@ -44687,8 +44428,7 @@ var define = System.amdDefine;
       return this.createChildFromResolved(ResolvedReflectiveProviders);
     };
     ReflectiveInjector_.prototype.createChildFromResolved = function(providers) {
-      var proto = new ReflectiveProtoInjector(providers);
-      var inj = new ReflectiveInjector_(proto);
+      var inj = new ReflectiveInjector_(providers);
       inj._parent = this;
       return inj;
     };
@@ -44698,11 +44438,20 @@ var define = System.amdDefine;
     ReflectiveInjector_.prototype.instantiateResolved = function(provider) {
       return this._instantiateProvider(provider);
     };
+    ReflectiveInjector_.prototype.getProviderAtIndex = function(index) {
+      if (index < 0 || index >= this._providers.length) {
+        throw new OutOfBoundsError(index);
+      }
+      return this._providers[index];
+    };
     ReflectiveInjector_.prototype._new = function(provider) {
-      if (this._constructionCounter++ > this._strategy.getMaxNumberOfObjects()) {
+      if (this._constructionCounter++ > this._getMaxNumberOfObjects()) {
         throw new CyclicDependencyError(this, provider.key);
       }
       return this._instantiateProvider(provider);
+    };
+    ReflectiveInjector_.prototype._getMaxNumberOfObjects = function() {
+      return this.objs.length;
     };
     ReflectiveInjector_.prototype._instantiateProvider = function(provider) {
       if (provider.multiProvider) {
@@ -44716,50 +44465,13 @@ var define = System.amdDefine;
       }
     };
     ReflectiveInjector_.prototype._instantiate = function(provider, ResolvedReflectiveFactory) {
+      var _this = this;
       var factory = ResolvedReflectiveFactory.factory;
-      var deps = ResolvedReflectiveFactory.dependencies;
-      var length = deps.length;
-      var d0;
-      var d1;
-      var d2;
-      var d3;
-      var d4;
-      var d5;
-      var d6;
-      var d7;
-      var d8;
-      var d9;
-      var d10;
-      var d11;
-      var d12;
-      var d13;
-      var d14;
-      var d15;
-      var d16;
-      var d17;
-      var d18;
-      var d19;
+      var deps;
       try {
-        d0 = length > 0 ? this._getByReflectiveDependency(provider, deps[0]) : null;
-        d1 = length > 1 ? this._getByReflectiveDependency(provider, deps[1]) : null;
-        d2 = length > 2 ? this._getByReflectiveDependency(provider, deps[2]) : null;
-        d3 = length > 3 ? this._getByReflectiveDependency(provider, deps[3]) : null;
-        d4 = length > 4 ? this._getByReflectiveDependency(provider, deps[4]) : null;
-        d5 = length > 5 ? this._getByReflectiveDependency(provider, deps[5]) : null;
-        d6 = length > 6 ? this._getByReflectiveDependency(provider, deps[6]) : null;
-        d7 = length > 7 ? this._getByReflectiveDependency(provider, deps[7]) : null;
-        d8 = length > 8 ? this._getByReflectiveDependency(provider, deps[8]) : null;
-        d9 = length > 9 ? this._getByReflectiveDependency(provider, deps[9]) : null;
-        d10 = length > 10 ? this._getByReflectiveDependency(provider, deps[10]) : null;
-        d11 = length > 11 ? this._getByReflectiveDependency(provider, deps[11]) : null;
-        d12 = length > 12 ? this._getByReflectiveDependency(provider, deps[12]) : null;
-        d13 = length > 13 ? this._getByReflectiveDependency(provider, deps[13]) : null;
-        d14 = length > 14 ? this._getByReflectiveDependency(provider, deps[14]) : null;
-        d15 = length > 15 ? this._getByReflectiveDependency(provider, deps[15]) : null;
-        d16 = length > 16 ? this._getByReflectiveDependency(provider, deps[16]) : null;
-        d17 = length > 17 ? this._getByReflectiveDependency(provider, deps[17]) : null;
-        d18 = length > 18 ? this._getByReflectiveDependency(provider, deps[18]) : null;
-        d19 = length > 19 ? this._getByReflectiveDependency(provider, deps[19]) : null;
+        deps = ResolvedReflectiveFactory.dependencies.map(function(dep) {
+          return _this._getByReflectiveDependency(dep);
+        });
       } catch (e) {
         if (e instanceof AbstractProviderError || e instanceof InstantiationError) {
           e.addKey(this, provider.key);
@@ -44768,90 +44480,35 @@ var define = System.amdDefine;
       }
       var obj;
       try {
-        switch (length) {
-          case 0:
-            obj = factory();
-            break;
-          case 1:
-            obj = factory(d0);
-            break;
-          case 2:
-            obj = factory(d0, d1);
-            break;
-          case 3:
-            obj = factory(d0, d1, d2);
-            break;
-          case 4:
-            obj = factory(d0, d1, d2, d3);
-            break;
-          case 5:
-            obj = factory(d0, d1, d2, d3, d4);
-            break;
-          case 6:
-            obj = factory(d0, d1, d2, d3, d4, d5);
-            break;
-          case 7:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6);
-            break;
-          case 8:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7);
-            break;
-          case 9:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8);
-            break;
-          case 10:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9);
-            break;
-          case 11:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10);
-            break;
-          case 12:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11);
-            break;
-          case 13:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
-            break;
-          case 14:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13);
-            break;
-          case 15:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14);
-            break;
-          case 16:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15);
-            break;
-          case 17:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16);
-            break;
-          case 18:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16, d17);
-            break;
-          case 19:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16, d17, d18);
-            break;
-          case 20:
-            obj = factory(d0, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16, d17, d18, d19);
-            break;
-          default:
-            throw new Error("Cannot instantiate '" + provider.key.displayName + "' because it has more than 20 dependencies");
-        }
+        obj = factory.apply(void 0, deps);
       } catch (e) {
         throw new InstantiationError(this, e, e.stack, provider.key);
       }
       return obj;
     };
-    ReflectiveInjector_.prototype._getByReflectiveDependency = function(provider, dep) {
-      return this._getByKey(dep.key, dep.lowerBoundVisibility, dep.upperBoundVisibility, dep.optional ? null : THROW_IF_NOT_FOUND);
+    ReflectiveInjector_.prototype._getByReflectiveDependency = function(dep) {
+      return this._getByKey(dep.key, dep.visibility, dep.optional ? null : THROW_IF_NOT_FOUND);
     };
-    ReflectiveInjector_.prototype._getByKey = function(key, lowerBoundVisibility, upperBoundVisibility, notFoundValue) {
+    ReflectiveInjector_.prototype._getByKey = function(key, visibility, notFoundValue) {
       if (key === INJECTOR_KEY) {
         return this;
       }
-      if (upperBoundVisibility instanceof Self) {
+      if (visibility instanceof Self) {
         return this._getByKeySelf(key, notFoundValue);
       } else {
-        return this._getByKeyDefault(key, notFoundValue, lowerBoundVisibility);
+        return this._getByKeyDefault(key, notFoundValue, visibility);
       }
+    };
+    ReflectiveInjector_.prototype._getObjByKeyId = function(keyId) {
+      for (var i = 0; i < this.keyIds.length; i++) {
+        if (this.keyIds[i] === keyId) {
+          if (this.objs[i] === UNDEFINED) {
+            this.objs[i] = this._new(this._providers[i]);
+          }
+          return this.objs[i];
+        }
+      }
+      return UNDEFINED;
     };
     ReflectiveInjector_.prototype._throwOrNull = function(key, notFoundValue) {
       if (notFoundValue !== THROW_IF_NOT_FOUND) {
@@ -44861,19 +44518,19 @@ var define = System.amdDefine;
       }
     };
     ReflectiveInjector_.prototype._getByKeySelf = function(key, notFoundValue) {
-      var obj = this._strategy.getObjByKeyId(key.id);
+      var obj = this._getObjByKeyId(key.id);
       return (obj !== UNDEFINED) ? obj : this._throwOrNull(key, notFoundValue);
     };
-    ReflectiveInjector_.prototype._getByKeyDefault = function(key, notFoundValue, lowerBoundVisibility) {
+    ReflectiveInjector_.prototype._getByKeyDefault = function(key, notFoundValue, visibility) {
       var inj;
-      if (lowerBoundVisibility instanceof SkipSelf) {
+      if (visibility instanceof SkipSelf) {
         inj = this._parent;
       } else {
         inj = this;
       }
       while (inj instanceof ReflectiveInjector_) {
         var inj_ = (inj);
-        var obj = inj_._strategy.getObjByKeyId(key.id);
+        var obj = inj_._getObjByKeyId(key.id);
         if (obj !== UNDEFINED)
           return obj;
         inj = inj_._parent;
@@ -44901,9 +44558,9 @@ var define = System.amdDefine;
   }());
   var INJECTOR_KEY = ReflectiveKey.get(Injector);
   function _mapProviders(injector, fn) {
-    var res = new Array(injector._proto.numberOfProviders);
-    for (var i = 0; i < injector._proto.numberOfProviders; ++i) {
-      res[i] = fn(injector._proto.getProviderAtIndex(i));
+    var res = new Array(injector._providers.length);
+    for (var i = 0; i < injector._providers.length; ++i) {
+      res[i] = fn(injector.getProviderAtIndex(i));
     }
     return res;
   }
@@ -45074,6 +44731,9 @@ var define = System.amdDefine;
   }
   function isPromise(obj) {
     return !!obj && typeof obj.then === 'function';
+  }
+  function isObservable(obj) {
+    return !!(obj && obj[rxjs_symbol_observable.$$observable]);
   }
   var APP_INITIALIZER = new OpaqueToken('Application Initializer');
   var ApplicationInitStatus = (function() {
@@ -46450,48 +46110,12 @@ var define = System.amdDefine;
   }());
   var RenderDebugInfo = (function() {
     function RenderDebugInfo() {}
-    Object.defineProperty(RenderDebugInfo.prototype, "injector", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderDebugInfo.prototype, "component", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderDebugInfo.prototype, "providerTokens", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderDebugInfo.prototype, "references", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderDebugInfo.prototype, "context", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(RenderDebugInfo.prototype, "source", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
+    RenderDebugInfo.prototype.injector = function() {};
+    RenderDebugInfo.prototype.component = function() {};
+    RenderDebugInfo.prototype.providerTokens = function() {};
+    RenderDebugInfo.prototype.references = function() {};
+    RenderDebugInfo.prototype.context = function() {};
+    RenderDebugInfo.prototype.source = function() {};
     return RenderDebugInfo;
   }());
   var Renderer = (function() {
@@ -47247,50 +46871,12 @@ var define = System.amdDefine;
   };
   var ComponentRef = (function() {
     function ComponentRef() {}
-    Object.defineProperty(ComponentRef.prototype, "location", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef.prototype, "injector", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef.prototype, "instance", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef.prototype, "hostView", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ComponentRef.prototype, "changeDetectorRef", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ComponentRef.prototype, "componentType", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
+    ComponentRef.prototype.location = function() {};
+    ComponentRef.prototype.injector = function() {};
+    ComponentRef.prototype.instance = function() {};
+    ComponentRef.prototype.hostView = function() {};
+    ComponentRef.prototype.changeDetectorRef = function() {};
+    ComponentRef.prototype.componentType = function() {};
     ComponentRef.prototype.destroy = function() {};
     ComponentRef.prototype.onDestroy = function(callback) {};
     return ComponentRef;
@@ -47679,32 +47265,12 @@ var define = System.amdDefine;
   }
   var PlatformRef = (function() {
     function PlatformRef() {}
-    PlatformRef.prototype.bootstrapModuleFactory = function(moduleFactory) {
-      throw unimplemented();
-    };
-    PlatformRef.prototype.bootstrapModule = function(moduleType, compilerOptions) {
-      if (compilerOptions === void 0) {
-        compilerOptions = [];
-      }
-      throw unimplemented();
-    };
+    PlatformRef.prototype.bootstrapModuleFactory = function(moduleFactory) {};
+    PlatformRef.prototype.bootstrapModule = function(moduleType, compilerOptions) {};
     PlatformRef.prototype.onDestroy = function(callback) {};
-    Object.defineProperty(PlatformRef.prototype, "injector", {
-      get: function() {
-        throw unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
+    PlatformRef.prototype.injector = function() {};
     PlatformRef.prototype.destroy = function() {};
-    Object.defineProperty(PlatformRef.prototype, "destroyed", {
-      get: function() {
-        throw unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
+    PlatformRef.prototype.destroyed = function() {};
     return PlatformRef;
   }());
   function _callAndReportToErrorHandler(errorHandler, callback) {
@@ -47828,6 +47394,7 @@ var define = System.amdDefine;
       } else {
         throw new Error(("The module " + stringify(moduleRef.instance.constructor) + " was bootstrapped, but it does not declare \"@NgModule.bootstrap\" components nor a \"ngDoBootstrap\" method. ") + "Please define one of these.");
       }
+      this._modules.push(moduleRef);
     };
     PlatformRef_.decorators = [{type: Injectable}];
     PlatformRef_.ctorParameters = function() {
@@ -47839,35 +47406,11 @@ var define = System.amdDefine;
     function ApplicationRef() {}
     ApplicationRef.prototype.bootstrap = function(componentFactory) {};
     ApplicationRef.prototype.tick = function() {};
-    Object.defineProperty(ApplicationRef.prototype, "componentTypes", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    Object.defineProperty(ApplicationRef.prototype, "components", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
-    ApplicationRef.prototype.attachView = function(view) {
-      unimplemented();
-    };
-    ApplicationRef.prototype.detachView = function(view) {
-      unimplemented();
-    };
-    Object.defineProperty(ApplicationRef.prototype, "viewCount", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
+    ApplicationRef.prototype.componentTypes = function() {};
+    ApplicationRef.prototype.components = function() {};
+    ApplicationRef.prototype.attachView = function(view) {};
+    ApplicationRef.prototype.detachView = function(view) {};
+    ApplicationRef.prototype.viewCount = function() {};
     return ApplicationRef;
   }());
   var ApplicationRef_ = (function(_super) {
@@ -48015,27 +47558,9 @@ var define = System.amdDefine;
   };
   var NgModuleRef = (function() {
     function NgModuleRef() {}
-    Object.defineProperty(NgModuleRef.prototype, "injector", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(NgModuleRef.prototype, "componentFactoryResolver", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(NgModuleRef.prototype, "instance", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
+    NgModuleRef.prototype.injector = function() {};
+    NgModuleRef.prototype.componentFactoryResolver = function() {};
+    NgModuleRef.prototype.instance = function() {};
     NgModuleRef.prototype.destroy = function() {};
     NgModuleRef.prototype.onDestroy = function(callback) {};
     return NgModuleRef;
@@ -48292,13 +47817,7 @@ var define = System.amdDefine;
   };
   var TemplateRef = (function() {
     function TemplateRef() {}
-    Object.defineProperty(TemplateRef.prototype, "elementRef", {
-      get: function() {
-        return null;
-      },
-      enumerable: true,
-      configurable: true
-    });
+    TemplateRef.prototype.elementRef = function() {};
     TemplateRef.prototype.createEmbeddedView = function(context) {};
     return TemplateRef;
   }());
@@ -48326,37 +47845,12 @@ var define = System.amdDefine;
   }(TemplateRef));
   var ViewContainerRef = (function() {
     function ViewContainerRef() {}
-    Object.defineProperty(ViewContainerRef.prototype, "element", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ViewContainerRef.prototype, "injector", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(ViewContainerRef.prototype, "parentInjector", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
+    ViewContainerRef.prototype.element = function() {};
+    ViewContainerRef.prototype.injector = function() {};
+    ViewContainerRef.prototype.parentInjector = function() {};
     ViewContainerRef.prototype.clear = function() {};
     ViewContainerRef.prototype.get = function(index) {};
-    Object.defineProperty(ViewContainerRef.prototype, "length", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
+    ViewContainerRef.prototype.length = function() {};
     ViewContainerRef.prototype.createEmbeddedView = function(templateRef, context, index) {};
     ViewContainerRef.prototype.createComponent = function(componentFactory, index, injector, projectableNodes) {};
     ViewContainerRef.prototype.insert = function(viewRef, index) {};
@@ -48453,7 +47947,7 @@ var define = System.amdDefine;
       return wtfLeave(s, viewRef_);
     };
     ViewContainerRef_.prototype.indexOf = function(viewRef) {
-      return this._element.nestedViews.indexOf(((viewRef)).internalView);
+      return this.length ? this._element.nestedViews.indexOf(((viewRef)).internalView) : -1;
     };
     ViewContainerRef_.prototype.remove = function(index) {
       if (index === void 0) {
@@ -48498,13 +47992,7 @@ var define = System.amdDefine;
       _super.apply(this, arguments);
     }
     ViewRef.prototype.destroy = function() {};
-    Object.defineProperty(ViewRef.prototype, "destroyed", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
+    ViewRef.prototype.destroyed = function() {};
     ViewRef.prototype.onDestroy = function(callback) {};
     return ViewRef;
   }(ChangeDetectorRef));
@@ -48513,21 +48001,8 @@ var define = System.amdDefine;
     function EmbeddedViewRef() {
       _super.apply(this, arguments);
     }
-    Object.defineProperty(EmbeddedViewRef.prototype, "context", {
-      get: function() {
-        return unimplemented();
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(EmbeddedViewRef.prototype, "rootNodes", {
-      get: function() {
-        return (unimplemented());
-      },
-      enumerable: true,
-      configurable: true
-    });
-    ;
+    EmbeddedViewRef.prototype.context = function() {};
+    EmbeddedViewRef.prototype.rootNodes = function() {};
     return EmbeddedViewRef;
   }(ViewRef));
   var ViewRef_ = (function() {
@@ -50407,6 +49882,7 @@ var define = System.amdDefine;
     FILL_STYLE_FLAG: FILL_STYLE_FLAG,
     ComponentStillLoadingError: ComponentStillLoadingError,
     isPromise: isPromise,
+    isObservable: isObservable,
     AnimationTransition: AnimationTransition
   };
   exports.createPlatform = createPlatform;

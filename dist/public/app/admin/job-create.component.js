@@ -8,13 +8,19 @@ var JobCreateComponent = (function () {
     function JobCreateComponent(jobService, router) {
         this.jobService = jobService;
         this.router = router;
-        this.job = new job_1.Job();
     }
-    JobCreateComponent.prototype.save = function () {
+    JobCreateComponent.prototype.ngOnInit = function () {
+        this.job = new job_1.Job();
+    };
+    JobCreateComponent.prototype.save = function (form) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.jobService.createAsync(this.job)];
+                    case 0:
+                        if (form.invalid) {
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, this.jobService.createAsync(this.job)];
                     case 1:
                         _a.sent();
                         this.goBack();

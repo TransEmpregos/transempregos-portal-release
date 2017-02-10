@@ -3,7 +3,9 @@ var tslib_1 = require("tslib");
 var core_1 = require("@angular/core");
 var HomeComponent = (function () {
     function HomeComponent() {
-        this.areaFormHome = 'candidate';
+        this.CANDIDATE = 'candidate';
+        this.RECRUITER = 'recruiter';
+        this.areaFormHome = this.CANDIDATE;
     }
     HomeComponent.prototype.ngOnInit = function () { };
     HomeComponent.prototype.setAreaFormHome = function (role) {

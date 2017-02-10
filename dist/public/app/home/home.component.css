@@ -1,41 +1,51 @@
 .login-and-register-area {
   min-height: 500px;
-  background-image: url("/dist/public/images/bg_recruiter.png");
-  background-size: cover;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   flex-direction: column;
   font-size: 14pt;
   color: #ececec;
-  text-align: center;
-  padding-bottom: 80px; }
+  text-align: center; }
   @media screen and (max-width: 320px) {
     .login-and-register-area {
       font-size: 12pt; } }
   .login-and-register-area > * {
     z-index: 1;
     position: relative; }
+  .login-and-register-area .bg-img-recruiter {
+    background-image: url("/dist/public/images/bg_recruiter.png");
+    background-size: cover;
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1 !important; }
+  .login-and-register-area .bg-img-candidate {
+    background-image: url("/dist/public/images/photo_39601_20150724.png");
+    background-size: cover;
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1 !important; }
   .login-and-register-area .area-form-home-recruiter {
     max-width: 700px;
     text-align: center;
     display: flex;
     flex-direction: column;
-    align-items: center; }
-    @media screen and (max-width: 426px) {
-      .login-and-register-area .area-form-home-recruiter {
-        bottom: 75px; } }
-  .login-and-register-area .bg-black-alpha {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 0; }
+    align-items: center;
+    bottom: 30px; }
+    .login-and-register-area .area-form-home-recruiter span, .login-and-register-area .area-form-home-recruiter a {
+      color: #fff;
+      font-weight: normal; }
   .login-and-register-area span {
     color: #b2b2b2;
-    display: inline-block; }
+    display: inline-block;
+    padding: 2% 0;
+    font-weight: bold; }
   .login-and-register-area span.active,
   .login-and-register-area span:active,
   .login-and-register-area span:hover {
@@ -44,16 +54,25 @@
     border-bottom: 2px solid #ececec;
     margin-bottom: -2px;
     cursor: pointer; }
-  .login-and-register-area .home-text-for-recruiter {
-    font-size: 22pt;
-    margin-bottom: 40px; }
+  .login-and-register-area .hidden-pipe {
+    margin: 0 1em; }
+    @media screen and (max-width: 374px) {
+      .login-and-register-area .hidden-pipe {
+        display: none; } }
+  .login-and-register-area .home-text-for-recruiter, .login-and-register-area .home-text-for-candidate {
+    font-size: 24pt;
+    margin-bottom: 40px;
+    font-weight: bold; }
     @media screen and (max-width: 320px) {
-      .login-and-register-area .home-text-for-recruiter {
-        font-size: 16pt;
+      .login-and-register-area .home-text-for-recruiter, .login-and-register-area .home-text-for-candidate {
+        font-size: 26pt;
         line-height: 1.4; } }
     @media screen and (max-width: 426px) {
-      .login-and-register-area .home-text-for-recruiter {
-        margin-top: 5%; } }
+      .login-and-register-area .home-text-for-recruiter, .login-and-register-area .home-text-for-candidate {
+        margin-top: 0; } }
+    @media screen and (max-width: 767px) {
+      .login-and-register-area .home-text-for-recruiter, .login-and-register-area .home-text-for-candidate {
+        font-size: 24pt; } }
   .login-and-register-area .btn-home-login {
     width: 80%;
     background: #00af85;
@@ -62,109 +81,81 @@
     margin-top: 50px; }
   @media screen and (max-width: 426px) {
     .login-and-register-area .margin-top-mobile {
-      margin-top: 20px; } }
-  .login-and-register-area .margin-bottom-16 {
-    margin-bottom: 100px; }
-  .login-and-register-area .margin-bottom-5 {
-    margin-bottom: 5%; }
+      margin-top: 50px; } }
+  .login-and-register-area .margin-bottom-50 {
+    margin-bottom: 50px; }
+  @media screen and (max-width: 424px) {
+    .login-and-register-area .font-size-choice {
+      font-size: 12pt; } }
+  @media screen and (max-width: 374px) {
+    .login-and-register-area .font-size-choice {
+      font-size: inherit; } }
   .login-and-register-area .margin-bottom-1 {
     margin-bottom: 1%; }
-  @media screen and (max-width: 426px) {
-    .login-and-register-area .area-form-home-candidate {
-      bottom: 105px; } }
-  .login-and-register-area .area-form-home-candidate form {
-    background: #fff;
-    color: #6a6a6a;
-    font-size: 12pt;
-    letter-spacing: -1px;
-    display: flex; }
-    @media screen and (max-width: 767px) {
-      .login-and-register-area .area-form-home-candidate form {
-        flex-direction: column; } }
-    .login-and-register-area .area-form-home-candidate form .form-group {
-      display: inline-flex;
-      align-items: center;
-      padding-left: 10px; }
-      .login-and-register-area .area-form-home-candidate form .form-group label[for="keyword"] {
-        margin-top: .5em;
-        line-height: 17px; }
-      .login-and-register-area .area-form-home-candidate form .form-group label[for="location"] {
-        line-height: 2px; }
-      .login-and-register-area .area-form-home-candidate form .form-group input:valid + label,
-      .login-and-register-area .area-form-home-candidate form .form-group input:focus + label {
-        display: none; }
-      .login-and-register-area .area-form-home-candidate form .form-group input:valid,
-      .login-and-register-area .area-form-home-candidate form .form-group input:focus {
-        width: 100%; }
-      @media screen and (max-width: 767px) {
-        .login-and-register-area .area-form-home-candidate form .form-group {
-          width: 100%; } }
-      @media screen and (min-width: 1024px) {
-        .login-and-register-area .area-form-home-candidate form .form-group label[for="location"] {
-          margin-top: .5em; } }
-    .login-and-register-area .area-form-home-candidate form .form-group-flex {
-      display: flex; }
-      .login-and-register-area .area-form-home-candidate form .form-group-flex input {
-        order: 2; }
-      .login-and-register-area .area-form-home-candidate form .form-group-flex label {
-        order: 1; }
-    .login-and-register-area .area-form-home-candidate form .form-group:nth-child(3) {
-      padding-left: 0;
-      margin-bottom: 0; }
-    .login-and-register-area .area-form-home-candidate form button, .login-and-register-area .area-form-home-candidate form input {
-      border: none; }
-    @media screen and (max-width: 767px) {
-      .login-and-register-area .area-form-home-candidate form input {
-        width: 150px; } }
+  .login-and-register-area .area-form-home-candidate {
+    width: 60%; }
+    @media screen and (max-width: 923px) {
+      .login-and-register-area .area-form-home-candidate {
+        width: 80%; } }
     @media screen and (max-width: 426px) {
-      .login-and-register-area .area-form-home-candidate form input {
-        width: 65%; } }
-    .login-and-register-area .area-form-home-candidate form button {
-      background: #35b89c;
-      height: 51px;
-      border-radius: 0; }
-      .login-and-register-area .area-form-home-candidate form button:focus {
-        background: #00c39a; }
-    .login-and-register-area .area-form-home-candidate form div label[for="location"] img {
-      width: 30px;
-      height: 30px; }
-    .login-and-register-area .area-form-home-candidate form .icon-search {
-      content: url("/dist/public/images/search.svg");
-      width: 24px;
-      height: 24px; }
+      .login-and-register-area .area-form-home-candidate {
+        width: 100%; } }
+    .login-and-register-area .area-form-home-candidate form {
+      background: #fff;
+      color: #6a6a6a;
+      font-size: 12pt;
+      letter-spacing: -1px;
+      display: flex;
+      margin-bottom: 50px; }
+      @media screen and (max-width: 767px) {
+        .login-and-register-area .area-form-home-candidate form {
+          flex-direction: column; } }
+      .login-and-register-area .area-form-home-candidate form .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+        margin-bottom: 0;
+        border-right: 1px solid #aaaaaa; }
+        .login-and-register-area .area-form-home-candidate form .form-group label {
+          font-weight: bold; }
+        .login-and-register-area .area-form-home-candidate form .form-group input {
+          width: 100%; }
+        .login-and-register-area .area-form-home-candidate form .form-group:first-child {
+          width: 50%; }
+        .login-and-register-area .area-form-home-candidate form .form-group:nth-child(2) {
+          width: 40%; }
+        @media screen and (max-width: 767px) {
+          .login-and-register-area .area-form-home-candidate form .form-group:first-child, .login-and-register-area .area-form-home-candidate form .form-group:nth-child(2) {
+            width: 100%; } }
+      .login-and-register-area .area-form-home-candidate form button, .login-and-register-area .area-form-home-candidate form input {
+        border: none;
+        padding: 0; }
+      .login-and-register-area .area-form-home-candidate form .form-group-button {
+        width: 10%; }
+        @media screen and (max-width: 767px) {
+          .login-and-register-area .area-form-home-candidate form .form-group-button {
+            width: 100%; } }
+        .login-and-register-area .area-form-home-candidate form .form-group-button button {
+          background: #35b89c;
+          height: 78px;
+          border-radius: 0; }
+          @media screen and (max-width: 426px) {
+            .login-and-register-area .area-form-home-candidate form .form-group-button button {
+              height: 50px; } }
+          .login-and-register-area .area-form-home-candidate form .form-group-button button:focus {
+            background: #00c39a; }
+          .login-and-register-area .area-form-home-candidate form .form-group-button button .icon-search {
+            content: url(/dist/public/images/search.svg);
+            width: 24px;
+            height: 24px; }
 
 .description-area {
   min-height: 500px;
-  padding: 10px;
-  background-color: #ebebeb; }
-  .description-area .home-page-menu {
-    position: absolute;
-    top: -38px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    color: #fff; }
-    .description-area .home-page-menu button {
-      width: 32%;
-      color: #fff;
-      white-space: initial; }
-      @media screen and (max-width: 426px) {
-        .description-area .home-page-menu button {
-          padding: 8px; } }
-      .description-area .home-page-menu button:nth-child(1) {
-        background-color: #7770a4; }
-      .description-area .home-page-menu button:nth-child(2) {
-        background-color: #ec6a4b; }
-      .description-area .home-page-menu button:nth-child(3) {
-        background-color: #f9b055; }
-    @media screen and (max-width: 426px) {
-      .description-area .home-page-menu {
-        top: -170px;
-        flex-direction: column; }
-        .description-area .home-page-menu button {
-          width: 100%;
-          margin-bottom: 10px; } }
+  background-color: #ebebeb;
+  display: flex;
+  align-items: center;
+  padding: 50px 0; }
   .description-area .description-sub-area {
     display: flex;
     justify-content: center;
@@ -173,16 +164,26 @@
       max-width: 750px; }
       .description-area .description-sub-area .aside-description button {
         border-color: #7770a4;
-        color: #7770a4; }
+        color: #7770a4;
+        text-transform: uppercase;
+        font-size: 16pt;
+        font-weight: bold;
+        width: 300px; }
         @media screen and (max-width: 426px) {
           .description-area .description-sub-area .aside-description button {
             width: 100%; } }
     .description-area .description-sub-area .title-aside-description {
-      font-size: 30pt;
       color: #7770a4;
-      line-height: 1.2; }
+      line-height: 1.2;
+      font-size: 28pt;
+      font-weight: bold; }
+      @media screen and (max-width: 426px) {
+        .description-area .description-sub-area .title-aside-description {
+          font-size: 24pt; } }
     .description-area .description-sub-area .p-content-description {
-      margin-bottom: 50px; }
+      margin-bottom: 50px;
+      font-size: 13pt;
+      color: #6b6b6b; }
     @media screen and (max-width: 767px) {
       .description-area .description-sub-area .img-description {
         display: none; } }
@@ -200,25 +201,31 @@
   color: #ececec;
   text-align: center; }
   .depositions-area .general-board-depositions {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    padding-left: 15px; }
-    .depositions-area .general-board-depositions .board-depositions {
-      margin-top: 5%; }
+    display: flex;
+    align-items: center; }
     .depositions-area .general-board-depositions .title-depositions {
-      font-size: 30pt;
-      text-align: left; }
+      text-align: left;
+      font-size: 28pt;
+      font-weight: bold; }
+      @media screen and (max-width: 426px) {
+        .depositions-area .general-board-depositions .title-depositions {
+          font-size: 24pt; } }
     .depositions-area .general-board-depositions .text-depositions {
       text-align: left;
-      margin-bottom: 50px; }
+      margin-bottom: 50px;
+      max-width: 550px;
+      font-size: 13pt; }
       .depositions-area .general-board-depositions .text-depositions span {
         color: #f9b055; }
     .depositions-area .general-board-depositions button {
       display: inherit;
       border-color: #fff;
       background-color: transparent;
-      color: #fff; }
+      color: #fff;
+      font-size: 16pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      width: 300px; }
       @media screen and (max-width: 426px) {
         .depositions-area .general-board-depositions button {
           width: 100%; } }
@@ -226,10 +233,16 @@
 .partners-area {
   min-height: 500px;
   display: flex;
-  align-items: center; }
+  align-items: center;
+  margin-bottom: 50px; }
   .partners-area .title-partners {
-    color: #35b89c;
-    font-size: 30pt; }
+    color: #7770a4;
+    font-size: 28pt;
+    font-weight: bold;
+    margin-top: 50px; }
+    @media screen and (max-width: 426px) {
+      .partners-area .title-partners {
+        font-size: 24pt; } }
   .partners-area ul {
     margin: 50px 0;
     list-style: none;
@@ -253,8 +266,12 @@
       .partners-area ul li a img {
         max-height: 100px; }
   .partners-area button {
-    color: #35b89c;
-    border-color: #35b89c; }
+    color: #7770a4;
+    border-color: #7770a4;
+    font-size: 16pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    width: 300px; }
     @media screen and (max-width: 426px) {
       .partners-area button {
         width: 100%; } }

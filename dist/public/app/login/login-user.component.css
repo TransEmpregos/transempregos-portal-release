@@ -1,86 +1,79 @@
-@media screen and (min-width: 940px) {
-  .max-width {
-    max-width: 940px;
-    margin: 0 auto; } }
-
-.max-width .candidate-bg-image {
+.candidate-bg-image {
   background-image: url("/dist/public/images/photo_39601_20150724.png"); }
 
-.max-width .recruiter-bg-image {
+.recruiter-bg-image {
   background-image: url("/dist/public/images/bg_recruiter.png"); }
 
-.max-width .user-area {
+.user-area {
   position: relative;
   margin: 0 auto;
-  padding: 0;
+  padding: 50px 0;
   min-height: 500px;
   background-size: cover; }
-  .max-width .user-area * > {
+  .user-area * > {
     z-index: 1;
     position: relative; }
-  .max-width .user-area .candidate-bg-color {
+  .user-area .candidate-bg-color {
     background-color: rgba(89, 63, 114, 0.7); }
-  .max-width .user-area .title-user-area {
+  .user-area .title-user-area {
+    width: 100%;
+    padding: 10px;
+    font-size: 16pt;
+    font-weight: bold;
     margin: 50px auto;
-    width: 80%;
     border-radius: 20px;
     color: #fff;
     font-size: 20pt;
     text-align: center;
     position: relative; }
-  .max-width .user-area .title-candidate-bg {
+  .user-area .title-candidate-bg {
     background-color: rgba(89, 63, 114, 0.9); }
-  .max-width .user-area .title-recruiter-bg {
+  .user-area .title-recruiter-bg {
     background-color: rgba(0, 0, 0, 0.9); }
-  .max-width .user-area .user-sub-area {
+  .user-area .uppercase-letter {
+    text-transform: uppercase; }
+  .user-area .user-sub-area {
     display: flex;
     justify-content: center;
     position: relative; }
     @media screen and (max-width: 767px) {
-      .max-width .user-area .user-sub-area {
+      .user-area .user-sub-area {
         flex-direction: column; } }
-    .max-width .user-area .user-sub-area .uppercase-letter {
-      text-transform: uppercase; }
-    .max-width .user-area .user-sub-area .login-area {
-      width: 40%;
-      border-right: solid 1px rgba(0, 0, 0, 0.8);
-      padding: 15px; }
-      .max-width .user-area .user-sub-area .login-area form {
-        color: #fff; }
-        .max-width .user-area .user-sub-area .login-area form legend {
-          font-size: 16pt; }
-        .max-width .user-area .user-sub-area .login-area form .checkbox {
-          display: inline-block; }
-        .max-width .user-area .user-sub-area .login-area form .form-group .form-control {
-          border-radius: 0; }
-        .max-width .user-area .user-sub-area .login-area form label {
-          font-size: 10pt; }
-        .max-width .user-area .user-sub-area .login-area form a {
-          color: #fff;
-          font-size: 10pt;
-          float: right; }
-        .max-width .user-area .user-sub-area .login-area form button.form-control {
-          color: #fff;
-          font-size: 12pt;
-          background-color: #35b89c; }
+    .user-area .user-sub-area .login-area, .user-area .user-sub-area .register-area {
+      width: 46%; }
       @media screen and (max-width: 767px) {
-        .max-width .user-area .user-sub-area .login-area {
-          border-right: 0;
-          width: 100%; }
-          .max-width .user-area .user-sub-area .login-area a {
-            float: none; } }
-    .max-width .user-area .user-sub-area .register-area {
-      width: 40%;
-      padding: 15px;
-      color: #fff; }
-      @media screen and (max-width: 767px) {
-        .max-width .user-area .user-sub-area .register-area {
+        .user-area .user-sub-area .login-area, .user-area .user-sub-area .register-area {
           width: 100%; } }
-      .max-width .user-area .user-sub-area .register-area .title-register {
-        font-size: 16pt; }
-      .max-width .user-area .user-sub-area .register-area .title-register + p {
-        font-size: 10pt; }
-      .max-width .user-area .user-sub-area .register-area button.form-control {
+      .user-area .user-sub-area .login-area .sub-title, .user-area .user-sub-area .register-area .sub-title {
+        font-size: 13pt;
+        font-weight: bold; }
+      .user-area .user-sub-area .login-area p, .user-area .user-sub-area .login-area label, .user-area .user-sub-area .register-area p, .user-area .user-sub-area .register-area label {
+        font-size: 11pt; }
+      .user-area .user-sub-area .login-area button.form-control, .user-area .user-sub-area .register-area button.form-control {
         color: #fff;
-        font-size: 12pt;
-        background-color: #ec6a4b; }
+        font-size: 12pt; }
+    .user-area .user-sub-area .login-area {
+      border-right: solid 1px rgba(0, 0, 0, 0.8);
+      padding: 1% 2% 1% 0; }
+      .user-area .user-sub-area .login-area form {
+        color: #fff; }
+        .user-area .user-sub-area .login-area form .checkbox {
+          display: inline-block; }
+      .user-area .user-sub-area .login-area .form-group .form-control {
+        border-radius: 0; }
+      .user-area .user-sub-area .login-area a {
+        color: #fff;
+        font-size: 10pt;
+        float: right; }
+      .user-area .user-sub-area .login-area button.form-control {
+        background-color: #35b89c; }
+    @media screen and (max-width: 767px) {
+      .user-area .user-sub-area {
+        border-right: 0; }
+        .user-area .user-sub-area a {
+          float: none; } }
+  .user-area .register-area {
+    padding: 1% 0 1% 2%;
+    color: #fff; }
+    .user-area .register-area button.form-control {
+      background-color: #ec6a4b; }
