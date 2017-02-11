@@ -1,7 +1,7 @@
 "use strict";
-const _transRouter_1 = require("./_transRouter");
-const upmonitor_1 = require("../upmonitor");
-exports.statusRouter = new _transRouter_1.Router();
+const transRouter_1 = require("../transRouter");
+const upmonitor_1 = require("../../upmonitor");
+exports.statusRouter = new transRouter_1.Router();
 exports.statusRouter.get('/', ctx => {
     if (upmonitor_1.upMonitor.isUp) {
         ctx.status = 200;

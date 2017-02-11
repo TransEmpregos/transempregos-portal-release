@@ -5,6 +5,8 @@ var platform_browser_1 = require("@angular/platform-browser");
 var forms_1 = require("@angular/forms");
 var http_1 = require("@angular/http");
 var ng_bootstrap_1 = require("@ng-bootstrap/ng-bootstrap");
+var angular_2_local_storage_1 = require("angular-2-local-storage");
+var httpAuth_1 = require("./httpAuth");
 var job_service_1 = require("./job.service");
 var app_component_1 = require("./app.component");
 var admin_component_1 = require("./admin/admin.component");
@@ -17,6 +19,8 @@ var home_component_1 = require("./home/home.component");
 var login_recruiter_component_1 = require("./login/login-recruiter.component");
 var login_candidate_component_1 = require("./login/login-candidate.component");
 var app_routing_module_1 = require("./app-routing.module");
+var route_guards_1 = require("./route.guards");
+var user_service_1 = require("./user.service");
 require("./rxjs-extensions");
 var AppModule = (function () {
     function AppModule() {
@@ -30,7 +34,11 @@ AppModule = tslib_1.__decorate([
             forms_1.FormsModule,
             http_1.HttpModule,
             ng_bootstrap_1.NgbModule.forRoot(),
-            app_routing_module_1.AppRoutingModule
+            app_routing_module_1.AppRoutingModule,
+            angular_2_local_storage_1.LocalStorageModule.withConfig({
+                prefix: 'trans-app',
+                storageType: 'localStorage'
+            })
         ],
         declarations: [
             app_component_1.AppComponent,
@@ -44,7 +52,7 @@ AppModule = tslib_1.__decorate([
             modal_yesno_component_1.ModalYesNoComponent,
             modal_ok_component_1.ModalOkComponent
         ],
-        providers: [job_service_1.JobService],
+        providers: [httpAuth_1.HttpAuth, job_service_1.JobService, user_service_1.UserService, route_guards_1.AdminGuard, route_guards_1.LoggedInGuard, route_guards_1.RecruiterGuard],
         entryComponents: [modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
         bootstrap: [app_component_1.AppComponent]
     })

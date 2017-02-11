@@ -14,12 +14,17 @@
             '@angular/router': 'npm:@angular/router/bundles/router.umd.js',
             '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.js',
             '@ng-bootstrap/ng-bootstrap': 'npm:@ng-bootstrap/ng-bootstrap/bundles/ng-bootstrap.js',
+            'angular-2-local-storage': 'npm:angular-2-local-storage/dist/',
             'tslib': 'npm:tslib/tslib.js',
             'rxjs': 'npm:rxjs'
         },
         packages: {
             'dist/public/app': {
                 main: './main.js',
+                defaultExtension: 'js'
+            },
+            'angular-2-local-storage': {
+                main: 'index.js',
                 defaultExtension: 'js'
             },
             rxjs: {

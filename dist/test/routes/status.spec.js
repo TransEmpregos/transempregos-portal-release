@@ -1,5 +1,5 @@
 "use strict";
-const status_1 = require("../../server/routes/status");
+const status_1 = require("../../server/routes/unprotected/status");
 const upmonitor_1 = require("../../server/upmonitor");
 const request = require("supertest");
 const Koa = require("koa");

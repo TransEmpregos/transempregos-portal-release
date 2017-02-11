@@ -19547,16 +19547,49 @@ System.registerDynamic("dist/public/app/login/login-recruiter.component.js", ["t
 
     
 });
-System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["tslib", "@angular/core"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["tslib", "@angular/core", "@angular/router", "../user.service"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var user_service_1 = $__require("../user.service");
     var LoginCandidateComponent = function () {
-        function LoginCandidateComponent() {}
-        LoginCandidateComponent.prototype.ngOnInit = function () {};
+        function LoginCandidateComponent(userService, router) {
+            this.userService = userService;
+            this.router = router;
+            this.user = {
+                userNameOrEmail: null,
+                password: null,
+                persist: false
+            };
+        }
+        LoginCandidateComponent.prototype.ngOnInit = function () {
+            this.tryToGoHome();
+        };
+        LoginCandidateComponent.prototype.loginAsync = function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            console.log(1111, this.user.userNameOrEmail, this.user.password);
+                            if (!(this.user.userNameOrEmail && this.user.password)) return [3 /*break*/, 2];
+                            return [4 /*yield*/, this.userService.loginAsync(this.user.userNameOrEmail, this.user.password)];
+                        case 1:
+                            _a.sent();
+                            _a.label = 2;
+                        case 2:
+                            this.tryToGoHome();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        LoginCandidateComponent.prototype.tryToGoHome = function () {
+            if (this.userService.isLoggedIn()) this.router.navigate(['']);
+        };
         return LoginCandidateComponent;
     }();
     LoginCandidateComponent = tslib_1.__decorate([core_1.Component({
@@ -19564,7 +19597,7 @@ System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["t
         selector: 'trans-login-candidate',
         templateUrl: 'login-candidate.component.html',
         styleUrls: ['login-user.component.css']
-    }), tslib_1.__metadata("design:paramtypes", [])], LoginCandidateComponent);
+    }), tslib_1.__metadata("design:paramtypes", [user_service_1.UserService, router_1.Router])], LoginCandidateComponent);
     exports.LoginCandidateComponent = LoginCandidateComponent;
 
     
@@ -33818,6 +33851,360 @@ var define = System.amdDefine;
 }));
 
 })();
+System.registerDynamic("dist/public/app/httpAuth.js", ["tslib", "@angular/core", "@angular/http", "./user.service"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var http_1 = $__require("@angular/http");
+    var user_service_1 = $__require("./user.service");
+    var HttpAuth = function () {
+        function HttpAuth(http, userService) {
+            this.http = http;
+            this.userService = userService;
+        }
+        HttpAuth.prototype.request = function (url, options) {
+            options = this.getOptions(options);
+            return this.http.request(url, options);
+        };
+        HttpAuth.prototype.get = function (url, options) {
+            options = this.getOptions(options);
+            return this.http.get(url, options);
+        };
+        HttpAuth.prototype.post = function (url, body, options) {
+            options = this.getOptions(options);
+            return this.http.post(url, body, options);
+        };
+        HttpAuth.prototype.put = function (url, body, options) {
+            options = this.getOptions(options);
+            return this.http.put(url, body, options);
+        };
+        HttpAuth.prototype.delete = function (url, options) {
+            options = this.getOptions(options);
+            return this.http.delete(url, options);
+        };
+        HttpAuth.prototype.patch = function (url, body, options) {
+            options = this.getOptions(options);
+            return this.http.patch(url, body, options);
+        };
+        HttpAuth.prototype.head = function (url, options) {
+            options = this.getOptions(options);
+            return this.http.head(url, options);
+        };
+        HttpAuth.prototype.options = function (url, options) {
+            options = this.getOptions(options);
+            return this.http.options(url, options);
+        };
+        HttpAuth.prototype.getOptions = function (options) {
+            options = options || {};
+            options.headers = options.headers || new http_1.Headers();
+            options.headers.append('Authorization', "Bearer " + this.userService.token);
+            return options;
+        };
+        return HttpAuth;
+    }();
+    HttpAuth = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [http_1.Http, user_service_1.UserService])], HttpAuth);
+    exports.HttpAuth = HttpAuth;
+
+    
+});
+System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/core", "@angular/http", "./httpAuth", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var http_1 = $__require("@angular/http");
+    var httpAuth_1 = $__require("./httpAuth");
+    $__require("rxjs/add/operator/toPromise");
+    var JobService = function () {
+        function JobService(http) {
+            this.http = http;
+            this.jobsUrl = 'api/jobs';
+            this.headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+        }
+        JobService.prototype.getAllAsync = function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var response, jobs, error_1;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 2,, 3]);
+                            return [4 /*yield*/, this.http.get(this.jobsUrl).toPromise()];
+                        case 1:
+                            response = _a.sent();
+                            jobs = response.json();
+                            return [2 /*return*/, jobs];
+                        case 2:
+                            error_1 = _a.sent();
+                            console.error("An error ocurred: " + error_1);
+                            throw error_1;
+                        case 3:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.getJobAsync = function (id) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var url, response, job, error_2;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.jobsUrl + "/" + id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.get(url).toPromise()];
+                        case 2:
+                            response = _a.sent();
+                            job = response.json();
+                            return [2 /*return*/, job];
+                        case 3:
+                            error_2 = _a.sent();
+                            console.error("An error ocurred: " + error_2);
+                            throw error_2;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.updateAsync = function (job) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var url, error_3;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.jobsUrl + "/" + job._id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.put(url, JSON.stringify(job), { headers: this.headers }).toPromise()];
+                        case 2:
+                            _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_3 = _a.sent();
+                            console.error("An error ocurred: " + error_3);
+                            throw error_3;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.createAsync = function (job) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var result, error_4;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 2,, 3]);
+                            return [4 /*yield*/, this.http.post(this.jobsUrl, JSON.stringify(job), { headers: this.headers }).toPromise()];
+                        case 1:
+                            result = _a.sent();
+                            return [2 /*return*/, result.json().data];
+                        case 2:
+                            error_4 = _a.sent();
+                            console.error("An error ocurred: " + error_4);
+                            throw error_4;
+                        case 3:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.deleteAsync = function (id) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var url, error_5;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.jobsUrl + "/" + id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.delete(url, { headers: this.headers }).toPromise()];
+                        case 2:
+                            _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_5 = _a.sent();
+                            console.error("An error ocurred: " + error_5);
+                            throw error_5;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        return JobService;
+    }();
+    JobService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [httpAuth_1.HttpAuth])], JobService);
+    exports.JobService = JobService;
+
+    
+});
+System.registerDynamic("dist/public/app/contact.js", [], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var Contact = function () {
+        function Contact() {}
+        return Contact;
+    }();
+    exports.Contact = Contact;
+
+    
+});
+System.registerDynamic("dist/public/app/job.js", ["./contact"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var contact_1 = $__require("./contact");
+    var Job = function () {
+        function Job() {
+            this.contact = new contact_1.Contact();
+        }
+        ;
+        return Job;
+    }();
+    exports.Job = Job;
+
+    
+});
+System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var job_service_1 = $__require("../job.service");
+    var job_1 = $__require("../job");
+    var JobCreateComponent = function () {
+        function JobCreateComponent(jobService, router) {
+            this.jobService = jobService;
+            this.router = router;
+        }
+        JobCreateComponent.prototype.ngOnInit = function () {
+            this.job = new job_1.Job();
+        };
+        JobCreateComponent.prototype.save = function (form) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (form.invalid) {
+                                return [2 /*return*/];
+                            }
+                            return [4 /*yield*/, this.jobService.createAsync(this.job)];
+                        case 1:
+                            _a.sent();
+                            this.goBack();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobCreateComponent.prototype.goBack = function () {
+            this.router.navigate(['/admin/job']);
+        };
+        return JobCreateComponent;
+    }();
+    JobCreateComponent = tslib_1.__decorate([core_1.Component({
+        moduleId: module.id,
+        selector: 'trans-admin-job-edit',
+        templateUrl: 'job-edit.component.html'
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.Router])], JobCreateComponent);
+    exports.JobCreateComponent = JobCreateComponent;
+
+    
+});
+System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./route.guards"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var admin_component_1 = $__require("./admin/admin.component");
+    var home_component_1 = $__require("./home/home.component");
+    var login_recruiter_component_1 = $__require("./login/login-recruiter.component");
+    var login_candidate_component_1 = $__require("./login/login-candidate.component");
+    var job_edit_component_1 = $__require("./admin/job-edit.component");
+    var jobs_list_component_1 = $__require("./admin/jobs-list.component");
+    var job_create_component_1 = $__require("./admin/job-create.component");
+    var route_guards_1 = $__require("./route.guards");
+    var routes = [{ path: '', component: home_component_1.HomeComponent, pathMatch: 'full' }, { path: 'login/recruiter', component: login_recruiter_component_1.LoginRecruiterComponent }, { path: 'login/candidate', component: login_candidate_component_1.LoginCandidateComponent }, { path: 'admin', component: admin_component_1.AdminComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job', component: jobs_list_component_1.JobsListComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/create', component: job_create_component_1.JobCreateComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/:id', component: job_edit_component_1.JobEditComponent, canActivate: [route_guards_1.RecruiterGuard] }];
+    var AppRoutingModule = function () {
+        function AppRoutingModule() {}
+        return AppRoutingModule;
+    }();
+    AppRoutingModule = tslib_1.__decorate([core_1.NgModule({
+        imports: [router_1.RouterModule.forRoot(routes)],
+        exports: [router_1.RouterModule]
+    })], AppRoutingModule);
+    exports.AppRoutingModule = AppRoutingModule;
+
+    
+});
+System.registerDynamic("dist/public/app/route.guards.js", ["tslib", "@angular/core", "./user.service"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var user_service_1 = $__require("./user.service");
+    var LoggedInGuard = function () {
+        function LoggedInGuard(userService) {
+            this.userService = userService;
+        }
+        LoggedInGuard.prototype.canActivate = function () {
+            return this.userService.isLoggedIn();
+        };
+        return LoggedInGuard;
+    }();
+    LoggedInGuard = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [user_service_1.UserService])], LoggedInGuard);
+    exports.LoggedInGuard = LoggedInGuard;
+    var AdminGuard = function () {
+        function AdminGuard(userService) {
+            this.userService = userService;
+        }
+        AdminGuard.prototype.canActivate = function () {
+            if (!this.userService.isLoggedIn()) return false;
+            if (this.userService.user) return this.userService.user.isAdmin;
+            return false;
+        };
+        return AdminGuard;
+    }();
+    AdminGuard = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [user_service_1.UserService])], AdminGuard);
+    exports.AdminGuard = AdminGuard;
+    var RecruiterGuard = function () {
+        function RecruiterGuard(userService) {
+            this.userService = userService;
+        }
+        RecruiterGuard.prototype.canActivate = function () {
+            if (!this.userService.isLoggedIn()) return false;
+            if (this.userService.user) return this.userService.user.isRecruiter;
+            return false;
+        };
+        return RecruiterGuard;
+    }();
+    RecruiterGuard = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [user_service_1.UserService])], RecruiterGuard);
+    exports.RecruiterGuard = RecruiterGuard;
+
+    
+});
 (function() {
 var define = System.amdDefine;
 var __extends;
@@ -39903,6 +40290,572 @@ var define = System.amdDefine;
 }));
 
 })();
+System.registerDynamic("npm:angular-2-local-storage/dist/local-storage.module.js", ["@angular/core", "./local-storage.service"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+        var c = arguments.length,
+            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+            d;
+        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+    var __metadata = this && this.__metadata || function (k, v) {
+        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+    };
+    var core_1 = $__require('@angular/core');
+    var local_storage_service_1 = $__require('./local-storage.service');
+    var LocalStorageModule = function () {
+        function LocalStorageModule() {}
+        LocalStorageModule.withConfig = function (userConfig) {
+            if (userConfig === void 0) {
+                userConfig = {};
+            }
+            return {
+                ngModule: LocalStorageModule,
+                providers: [{ provide: 'LOCAL_STORAGE_SERVICE_CONFIG', useValue: userConfig }]
+            };
+        };
+        LocalStorageModule = __decorate([core_1.NgModule({
+            providers: [local_storage_service_1.LocalStorageService]
+        }), __metadata('design:paramtypes', [])], LocalStorageModule);
+        return LocalStorageModule;
+    }();
+    exports.LocalStorageModule = LocalStorageModule;
+    
+});
+System.registerDynamic('npm:rxjs/observable/ConnectableObservable.js', ['../Subject', '../Observable', '../Subscriber', '../Subscription'], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var __extends = this && this.__extends || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        function __() {
+            this.constructor = d;
+        }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+    var Subject_1 = $__require('../Subject');
+    var Observable_1 = $__require('../Observable');
+    var Subscriber_1 = $__require('../Subscriber');
+    var Subscription_1 = $__require('../Subscription');
+    /**
+     * @class ConnectableObservable<T>
+     */
+    var ConnectableObservable = function (_super) {
+        __extends(ConnectableObservable, _super);
+        function ConnectableObservable(source, subjectFactory) {
+            _super.call(this);
+            this.source = source;
+            this.subjectFactory = subjectFactory;
+            this._refCount = 0;
+        }
+        ConnectableObservable.prototype._subscribe = function (subscriber) {
+            return this.getSubject().subscribe(subscriber);
+        };
+        ConnectableObservable.prototype.getSubject = function () {
+            var subject = this._subject;
+            if (!subject || subject.isStopped) {
+                this._subject = this.subjectFactory();
+            }
+            return this._subject;
+        };
+        ConnectableObservable.prototype.connect = function () {
+            var connection = this._connection;
+            if (!connection) {
+                connection = this._connection = new Subscription_1.Subscription();
+                connection.add(this.source.subscribe(new ConnectableSubscriber(this.getSubject(), this)));
+                if (connection.closed) {
+                    this._connection = null;
+                    connection = Subscription_1.Subscription.EMPTY;
+                } else {
+                    this._connection = connection;
+                }
+            }
+            return connection;
+        };
+        ConnectableObservable.prototype.refCount = function () {
+            return this.lift(new RefCountOperator(this));
+        };
+        return ConnectableObservable;
+    }(Observable_1.Observable);
+    exports.ConnectableObservable = ConnectableObservable;
+    exports.connectableObservableDescriptor = {
+        operator: { value: null },
+        _refCount: { value: 0, writable: true },
+        _subscribe: { value: ConnectableObservable.prototype._subscribe },
+        getSubject: { value: ConnectableObservable.prototype.getSubject },
+        connect: { value: ConnectableObservable.prototype.connect },
+        refCount: { value: ConnectableObservable.prototype.refCount }
+    };
+    var ConnectableSubscriber = function (_super) {
+        __extends(ConnectableSubscriber, _super);
+        function ConnectableSubscriber(destination, connectable) {
+            _super.call(this, destination);
+            this.connectable = connectable;
+        }
+        ConnectableSubscriber.prototype._error = function (err) {
+            this._unsubscribe();
+            _super.prototype._error.call(this, err);
+        };
+        ConnectableSubscriber.prototype._complete = function () {
+            this._unsubscribe();
+            _super.prototype._complete.call(this);
+        };
+        ConnectableSubscriber.prototype._unsubscribe = function () {
+            var connectable = this.connectable;
+            if (connectable) {
+                this.connectable = null;
+                var connection = connectable._connection;
+                connectable._refCount = 0;
+                connectable._subject = null;
+                connectable._connection = null;
+                if (connection) {
+                    connection.unsubscribe();
+                }
+            }
+        };
+        return ConnectableSubscriber;
+    }(Subject_1.SubjectSubscriber);
+    var RefCountOperator = function () {
+        function RefCountOperator(connectable) {
+            this.connectable = connectable;
+        }
+        RefCountOperator.prototype.call = function (subscriber, source) {
+            var connectable = this.connectable;
+            connectable._refCount++;
+            var refCounter = new RefCountSubscriber(subscriber, connectable);
+            var subscription = source.subscribe(refCounter);
+            if (!refCounter.closed) {
+                refCounter.connection = connectable.connect();
+            }
+            return subscription;
+        };
+        return RefCountOperator;
+    }();
+    var RefCountSubscriber = function (_super) {
+        __extends(RefCountSubscriber, _super);
+        function RefCountSubscriber(destination, connectable) {
+            _super.call(this, destination);
+            this.connectable = connectable;
+        }
+        RefCountSubscriber.prototype._unsubscribe = function () {
+            var connectable = this.connectable;
+            if (!connectable) {
+                this.connection = null;
+                return;
+            }
+            this.connectable = null;
+            var refCount = connectable._refCount;
+            if (refCount <= 0) {
+                this.connection = null;
+                return;
+            }
+            connectable._refCount = refCount - 1;
+            if (refCount > 1) {
+                this.connection = null;
+                return;
+            }
+            ///
+            // Compare the local RefCountSubscriber's connection Subscription to the
+            // connection Subscription on the shared ConnectableObservable. In cases
+            // where the ConnectableObservable source synchronously emits values, and
+            // the RefCountSubscriber's downstream Observers synchronously unsubscribe,
+            // execution continues to here before the RefCountOperator has a chance to
+            // supply the RefCountSubscriber with the shared connection Subscription.
+            // For example:
+            // ```
+            // Observable.range(0, 10)
+            //   .publish()
+            //   .refCount()
+            //   .take(5)
+            //   .subscribe();
+            // ```
+            // In order to account for this case, RefCountSubscriber should only dispose
+            // the ConnectableObservable's shared connection Subscription if the
+            // connection Subscription exists, *and* either:
+            //   a. RefCountSubscriber doesn't have a reference to the shared connection
+            //      Subscription yet, or,
+            //   b. RefCountSubscriber's connection Subscription reference is identical
+            //      to the shared connection Subscription
+            ///
+            var connection = this.connection;
+            var sharedConnection = connectable._connection;
+            this.connection = null;
+            if (sharedConnection && (!connection || sharedConnection === connection)) {
+                sharedConnection.unsubscribe();
+            }
+        };
+        return RefCountSubscriber;
+    }(Subscriber_1.Subscriber);
+    
+});
+System.registerDynamic('npm:rxjs/operator/multicast.js', ['../observable/ConnectableObservable'], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var ConnectableObservable_1 = $__require('../observable/ConnectableObservable');
+    /* tslint:disable:max-line-length */
+    /**
+     * Returns an Observable that emits the results of invoking a specified selector on items
+     * emitted by a ConnectableObservable that shares a single subscription to the underlying stream.
+     *
+     * <img src="./img/multicast.png" width="100%">
+     *
+     * @param {Function|Subject} Factory function to create an intermediate subject through
+     * which the source sequence's elements will be multicast to the selector function
+     * or Subject to push source elements into.
+     * @param {Function} Optional selector function that can use the multicasted source stream
+     * as many times as needed, without causing multiple subscriptions to the source stream.
+     * Subscribers to the given source will receive all notifications of the source from the
+     * time of the subscription forward.
+     * @return {Observable} an Observable that emits the results of invoking the selector
+     * on the items emitted by a `ConnectableObservable` that shares a single subscription to
+     * the underlying stream.
+     * @method multicast
+     * @owner Observable
+     */
+    function multicast(subjectOrSubjectFactory, selector) {
+        var subjectFactory;
+        if (typeof subjectOrSubjectFactory === 'function') {
+            subjectFactory = subjectOrSubjectFactory;
+        } else {
+            subjectFactory = function subjectFactory() {
+                return subjectOrSubjectFactory;
+            };
+        }
+        if (typeof selector === 'function') {
+            return this.lift(new MulticastOperator(subjectFactory, selector));
+        }
+        var connectable = Object.create(this, ConnectableObservable_1.connectableObservableDescriptor);
+        connectable.source = this;
+        connectable.subjectFactory = subjectFactory;
+        return connectable;
+    }
+    exports.multicast = multicast;
+    var MulticastOperator = function () {
+        function MulticastOperator(subjectFactory, selector) {
+            this.subjectFactory = subjectFactory;
+            this.selector = selector;
+        }
+        MulticastOperator.prototype.call = function (subscriber, source) {
+            var selector = this.selector;
+            var subject = this.subjectFactory();
+            var subscription = selector(subject).subscribe(subscriber);
+            subscription.add(source.subscribe(subject));
+            return subscription;
+        };
+        return MulticastOperator;
+    }();
+    exports.MulticastOperator = MulticastOperator;
+    
+});
+System.registerDynamic('npm:rxjs/operator/share.js', ['./multicast', '../Subject'], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var multicast_1 = $__require('./multicast');
+    var Subject_1 = $__require('../Subject');
+    function shareSubjectFactory() {
+        return new Subject_1.Subject();
+    }
+    /**
+     * Returns a new Observable that multicasts (shares) the original Observable. As long as there is at least one
+     * Subscriber this Observable will be subscribed and emitting data. When all subscribers have unsubscribed it will
+     * unsubscribe from the source Observable. Because the Observable is multicasting it makes the stream `hot`.
+     * This is an alias for .publish().refCount().
+     *
+     * <img src="./img/share.png" width="100%">
+     *
+     * @return {Observable<T>} an Observable that upon connection causes the source Observable to emit items to its Observers
+     * @method share
+     * @owner Observable
+     */
+    function share() {
+        return multicast_1.multicast.call(this, shareSubjectFactory).refCount();
+    }
+    exports.share = share;
+    ;
+    
+});
+System.registerDynamic('npm:rxjs/add/operator/share.js', ['../../Observable', '../../operator/share'], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  var Observable_1 = $__require('../../Observable');
+  var share_1 = $__require('../../operator/share');
+  Observable_1.Observable.prototype.share = share_1.share;
+  
+});
+System.registerDynamic("npm:angular-2-local-storage/dist/local-storage.service.js", ["@angular/core", "rxjs/Observable", "rxjs/Subscriber", "rxjs/add/operator/share"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+        var c = arguments.length,
+            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+            d;
+        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+    var __metadata = this && this.__metadata || function (k, v) {
+        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+    };
+    var __param = this && this.__param || function (paramIndex, decorator) {
+        return function (target, key) {
+            decorator(target, key, paramIndex);
+        };
+    };
+    var core_1 = $__require('@angular/core');
+    var Observable_1 = $__require('rxjs/Observable');
+    var Subscriber_1 = $__require('rxjs/Subscriber');
+    $__require('rxjs/add/operator/share');
+    var DEPRECATED = 'This function is deprecated.';
+    var LOCAL_STORAGE_NOT_SUPPORTED = 'LOCAL_STORAGE_NOT_SUPPORTED';
+    var LocalStorageService = function () {
+        function LocalStorageService(config) {
+            var _this = this;
+            this.isSupported = false;
+            this.notifyOptions = {
+                setItem: false,
+                removeItem: false
+            };
+            this.prefix = 'ls';
+            this.storageType = 'localStorage';
+            this.errors = new Subscriber_1.Subscriber();
+            this.removeItems = new Subscriber_1.Subscriber();
+            this.setItems = new Subscriber_1.Subscriber();
+            this.warnings = new Subscriber_1.Subscriber();
+            var notifyOptions = config.notifyOptions,
+                prefix = config.prefix,
+                storageType = config.storageType;
+            if (notifyOptions != null) {
+                var setItem = notifyOptions.setItem,
+                    removeItem = notifyOptions.removeItem;
+                this.setNotify(!!setItem, !!removeItem);
+            }
+            if (prefix != null) {
+                this.setPrefix(prefix);
+            }
+            if (storageType != null) {
+                this.setStorageType(storageType);
+            }
+            this.errors$ = new Observable_1.Observable(function (observer) {
+                return _this.errors = observer;
+            }).share();
+            this.removeItems$ = new Observable_1.Observable(function (observer) {
+                return _this.removeItems = observer;
+            }).share();
+            this.setItems$ = new Observable_1.Observable(function (observer) {
+                return _this.setItems = observer;
+            }).share();
+            this.warnings$ = new Observable_1.Observable(function (observer) {
+                return _this.warnings = observer;
+            }).share();
+            this.isSupported = this.checkSupport();
+        }
+        LocalStorageService.prototype.add = function (key, value) {
+            if (console && console.warn) {
+                console.warn(DEPRECATED);
+                console.warn('Use `LocalStorageService.set` instead.');
+            }
+            return this.set(key, value);
+        };
+        LocalStorageService.prototype.clearAll = function (regularExpression) {
+            // Setting both regular expressions independently
+            // Empty strings result in catchall RegExp
+            var prefixRegex = !!this.prefix ? new RegExp('^' + this.prefix) : new RegExp('');
+            var testRegex = !!regularExpression ? new RegExp(regularExpression) : new RegExp('');
+            if (!this.isSupported) {
+                this.warnings.next(LOCAL_STORAGE_NOT_SUPPORTED);
+                return false;
+            }
+            var prefixLength = this.prefix.length;
+            for (var key in this.webStorage) {
+                // Only remove items that are for this app and match the regular expression
+                if (prefixRegex.test(key) && testRegex.test(key.substr(prefixLength))) {
+                    try {
+                        this.remove(key.substr(prefixLength));
+                    } catch (e) {
+                        this.errors.next(e.message);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+        LocalStorageService.prototype.deriveKey = function (key) {
+            return "" + this.prefix + key;
+        };
+        LocalStorageService.prototype.get = function (key) {
+            if (!this.isSupported) {
+                this.warnings.next(LOCAL_STORAGE_NOT_SUPPORTED);
+                return null;
+            }
+            var item = this.webStorage ? this.webStorage.getItem(this.deriveKey(key)) : null;
+            // FIXME: not a perfect solution, since a valid 'null' string can't be stored
+            if (!item || item === 'null') {
+                return null;
+            }
+            try {
+                return JSON.parse(item);
+            } catch (e) {
+                return null;
+            }
+        };
+        LocalStorageService.prototype.getStorageType = function () {
+            return this.storageType;
+        };
+        LocalStorageService.prototype.keys = function () {
+            if (!this.isSupported) {
+                this.warnings.next(LOCAL_STORAGE_NOT_SUPPORTED);
+                return [];
+            }
+            var prefixLength = this.prefix.length;
+            var keys = [];
+            for (var key in this.webStorage) {
+                // Only return keys that are for this app
+                if (key.substr(0, prefixLength) === this.prefix) {
+                    try {
+                        keys.push(key.substr(prefixLength));
+                    } catch (e) {
+                        this.errors.next(e.message);
+                        return [];
+                    }
+                }
+            }
+            return keys;
+        };
+        LocalStorageService.prototype.length = function () {
+            var count = 0;
+            var storage = this.webStorage;
+            for (var i = 0; i < storage.length; i++) {
+                if (storage.key(i).indexOf(this.prefix) === 0) {
+                    count += 1;
+                }
+            }
+            return count;
+        };
+        LocalStorageService.prototype.remove = function () {
+            var _this = this;
+            var keys = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                keys[_i - 0] = arguments[_i];
+            }
+            var result = true;
+            keys.forEach(function (key) {
+                if (!_this.isSupported) {
+                    _this.warnings.next(LOCAL_STORAGE_NOT_SUPPORTED);
+                    result = false;
+                }
+                try {
+                    _this.webStorage.removeItem(_this.deriveKey(key));
+                    if (_this.notifyOptions.removeItem) {
+                        _this.removeItems.next({
+                            key: key,
+                            storageType: _this.storageType
+                        });
+                    }
+                } catch (e) {
+                    _this.errors.next(e.message);
+                    result = false;
+                }
+            });
+            return result;
+        };
+        LocalStorageService.prototype.set = function (key, value) {
+            // Let's convert `undefined` values to `null` to get the value consistent
+            if (value === undefined) {
+                value = null;
+            } else {
+                value = JSON.stringify(value);
+            }
+            if (!this.isSupported) {
+                this.warnings.next(LOCAL_STORAGE_NOT_SUPPORTED);
+                return false;
+            }
+            try {
+                if (this.webStorage) {
+                    this.webStorage.setItem(this.deriveKey(key), value);
+                }
+                if (this.notifyOptions.setItem) {
+                    this.setItems.next({
+                        key: key,
+                        newvalue: value,
+                        storageType: this.storageType
+                    });
+                }
+            } catch (e) {
+                this.errors.next(e.message);
+                return false;
+            }
+            return true;
+        };
+        LocalStorageService.prototype.checkSupport = function () {
+            try {
+                var supported = this.storageType in window && window[this.storageType] !== null;
+                if (supported) {
+                    this.webStorage = window[this.storageType];
+                    // When Safari (OS X or iOS) is in private browsing mode, it
+                    // appears as though localStorage is available, but trying to
+                    // call .setItem throws an exception.
+                    //
+                    // "QUOTA_EXCEEDED_ERR: DOM Exception 22: An attempt was made
+                    // to add something to storage that exceeded the quota."
+                    var key = this.deriveKey("__" + Math.round(Math.random() * 1e7));
+                    this.webStorage.setItem(key, '');
+                    this.webStorage.removeItem(key);
+                }
+                return supported;
+            } catch (e) {
+                this.errors.next(e.message);
+                return false;
+            }
+        };
+        LocalStorageService.prototype.setPrefix = function (prefix) {
+            this.prefix = prefix;
+            // If there is a prefix set in the config let's use that with an appended
+            // period for readability:
+            var PERIOD = '.';
+            if (this.prefix && !this.prefix.endsWith(PERIOD)) {
+                this.prefix = !!this.prefix ? "" + this.prefix + PERIOD : '';
+            }
+        };
+        LocalStorageService.prototype.setStorageType = function (storageType) {
+            this.storageType = storageType;
+        };
+        LocalStorageService.prototype.setNotify = function (setItem, removeItem) {
+            if (setItem != null) {
+                this.notifyOptions.setItem = setItem;
+            }
+            if (removeItem != null) {
+                this.notifyOptions.removeItem = removeItem;
+            }
+        };
+        LocalStorageService = __decorate([core_1.Injectable(), __param(0, core_1.Inject('LOCAL_STORAGE_SERVICE_CONFIG')), __metadata('design:paramtypes', [Object])], LocalStorageService);
+        return LocalStorageService;
+    }();
+    exports.LocalStorageService = LocalStorageService;
+    
+});
+System.registerDynamic('npm:angular-2-local-storage/dist/index.js', ['./local-storage.module', './local-storage.service'], true, function ($__require, exports, module) {
+  "use strict";
+
+  var global = this || self,
+      GLOBAL = global;
+  var local_storage_module_1 = $__require('./local-storage.module');
+  exports.LocalStorageModule = local_storage_module_1.LocalStorageModule;
+  var local_storage_service_1 = $__require('./local-storage.service');
+  exports.LocalStorageService = local_storage_service_1.LocalStorageService;
+  
+});
 System.registerDynamic('npm:rxjs/operator/toPromise.js', ['../util/root'], true, function ($__require, exports, module) {
     "use strict";
 
@@ -39995,7 +40948,7 @@ System.registerDynamic('npm:rxjs/add/operator/toPromise.js', ['../../Observable'
   Observable_1.Observable.prototype.toPromise = toPromise_1.toPromise;
   
 });
-System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/core", "@angular/http", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/user.service.js", ["tslib", "@angular/core", "@angular/http", "angular-2-local-storage", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -40003,240 +40956,91 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var http_1 = $__require("@angular/http");
+    var angular_2_local_storage_1 = $__require("angular-2-local-storage");
     $__require("rxjs/add/operator/toPromise");
-    var JobService = function () {
-        function JobService(http) {
+    var UserService = function () {
+        function UserService(http, localStorageService) {
             this.http = http;
-            this.jobsUrl = 'api/jobs';
-            this.headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+            this.localStorageService = localStorageService;
+            this.loggedIn = false;
+            if (this._token && this._user) this.loggedIn = true;
         }
-        JobService.prototype.getAllAsync = function () {
+        UserService.prototype.loginAsync = function (userNameOrEmail, password) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var response, jobs, error_1;
+                var headers, res, error_1, resp;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 2,, 3]);
-                            return [4 /*yield*/, this.http.get(this.jobsUrl).toPromise()];
+                            if (this.loggedIn) return [2 /*return*/];
+                            headers = new http_1.Headers();
+                            headers.append('Content-Type', 'application/json');
+                            _a.label = 1;
                         case 1:
-                            response = _a.sent();
-                            jobs = response.json();
-                            return [2 /*return*/, jobs];
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.post('/api/login', JSON.stringify({ userNameOrEmail: userNameOrEmail, password: password }), { headers: headers }).toPromise()];
                         case 2:
+                            res = _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
                             error_1 = _a.sent();
-                            console.error("An error ocurred: " + error_1);
-                            throw error_1;
-                        case 3:
                             return [2 /*return*/];
-                    }
-                });
-            });
-        };
-        JobService.prototype.getJobAsync = function (id) {
-            return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var url, response, job, error_2;
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            url = this.jobsUrl + "/" + id;
-                            _a.label = 1;
-                        case 1:
-                            _a.trys.push([1, 3,, 4]);
-                            return [4 /*yield*/, this.http.get(url).toPromise()];
-                        case 2:
-                            response = _a.sent();
-                            job = response.json();
-                            return [2 /*return*/, job];
-                        case 3:
-                            error_2 = _a.sent();
-                            console.error("An error ocurred: " + error_2);
-                            throw error_2;
                         case 4:
+                            resp = res.json();
+                            if (!resp.user) return [2 /*return*/];
+                            this._token = resp.token;
+                            this._user = resp.user;
+                            this.loggedIn = true;
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        JobService.prototype.updateAsync = function (job) {
-            return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var url, error_3;
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            url = this.jobsUrl + "/" + job._id;
-                            _a.label = 1;
-                        case 1:
-                            _a.trys.push([1, 3,, 4]);
-                            return [4 /*yield*/, this.http.put(url, JSON.stringify(job), { headers: this.headers }).toPromise()];
-                        case 2:
-                            _a.sent();
-                            return [3 /*break*/, 4];
-                        case 3:
-                            error_3 = _a.sent();
-                            console.error("An error ocurred: " + error_3);
-                            throw error_3;
-                        case 4:
-                            return [2 /*return*/];
-                    }
-                });
-            });
+        UserService.prototype.logout = function () {
+            this._token = null;
+            this._user = null;
+            this.loggedIn = false;
         };
-        JobService.prototype.createAsync = function (job) {
-            return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var result, error_4;
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            _a.trys.push([0, 2,, 3]);
-                            return [4 /*yield*/, this.http.post(this.jobsUrl, JSON.stringify(job), { headers: this.headers }).toPromise()];
-                        case 1:
-                            result = _a.sent();
-                            return [2 /*return*/, result.json().data];
-                        case 2:
-                            error_4 = _a.sent();
-                            console.error("An error ocurred: " + error_4);
-                            throw error_4;
-                        case 3:
-                            return [2 /*return*/];
-                    }
-                });
-            });
+        UserService.prototype.isLoggedIn = function () {
+            return this.loggedIn;
         };
-        JobService.prototype.deleteAsync = function (id) {
-            return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var url, error_5;
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            url = this.jobsUrl + "/" + id;
-                            _a.label = 1;
-                        case 1:
-                            _a.trys.push([1, 3,, 4]);
-                            return [4 /*yield*/, this.http.delete(url, { headers: this.headers }).toPromise()];
-                        case 2:
-                            _a.sent();
-                            return [3 /*break*/, 4];
-                        case 3:
-                            error_5 = _a.sent();
-                            console.error("An error ocurred: " + error_5);
-                            throw error_5;
-                        case 4:
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        };
-        return JobService;
+        Object.defineProperty(UserService.prototype, "user", {
+            get: function () {
+                return this._user;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UserService.prototype, "_user", {
+            get: function () {
+                return this.localStorageService.get('user');
+            },
+            set: function (u) {
+                if (u == null) this.localStorageService.remove('user');else this.localStorageService.set('user', u);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UserService.prototype, "token", {
+            get: function () {
+                return this._token;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(UserService.prototype, "_token", {
+            get: function () {
+                return this.localStorageService.get('auth_token');
+            },
+            set: function (t) {
+                if (t == null) this.localStorageService.remove('auth_token');else this.localStorageService.set('auth_token', t);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return UserService;
     }();
-    JobService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [http_1.Http])], JobService);
-    exports.JobService = JobService;
-
-    
-});
-System.registerDynamic("dist/public/app/contact.js", [], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    var Contact = function () {
-        function Contact() {}
-        return Contact;
-    }();
-    exports.Contact = Contact;
-
-    
-});
-System.registerDynamic("dist/public/app/job.js", ["./contact"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    var contact_1 = $__require("./contact");
-    var Job = function () {
-        function Job() {
-            this.contact = new contact_1.Contact();
-        }
-        ;
-        return Job;
-    }();
-    exports.Job = Job;
-
-    
-});
-System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    var tslib_1 = $__require("tslib");
-    var core_1 = $__require("@angular/core");
-    var router_1 = $__require("@angular/router");
-    var job_service_1 = $__require("../job.service");
-    var job_1 = $__require("../job");
-    var JobCreateComponent = function () {
-        function JobCreateComponent(jobService, router) {
-            this.jobService = jobService;
-            this.router = router;
-        }
-        JobCreateComponent.prototype.ngOnInit = function () {
-            this.job = new job_1.Job();
-        };
-        JobCreateComponent.prototype.save = function (form) {
-            return tslib_1.__awaiter(this, void 0, void 0, function () {
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (form.invalid) {
-                                return [2 /*return*/];
-                            }
-                            return [4 /*yield*/, this.jobService.createAsync(this.job)];
-                        case 1:
-                            _a.sent();
-                            this.goBack();
-                            return [2 /*return*/];
-                    }
-                });
-            });
-        };
-        JobCreateComponent.prototype.goBack = function () {
-            this.router.navigate(['/admin/job']);
-        };
-        return JobCreateComponent;
-    }();
-    JobCreateComponent = tslib_1.__decorate([core_1.Component({
-        moduleId: module.id,
-        selector: 'trans-admin-job-edit',
-        templateUrl: 'job-edit.component.html'
-    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.Router])], JobCreateComponent);
-    exports.JobCreateComponent = JobCreateComponent;
-
-    
-});
-System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    var tslib_1 = $__require("tslib");
-    var core_1 = $__require("@angular/core");
-    var router_1 = $__require("@angular/router");
-    var admin_component_1 = $__require("./admin/admin.component");
-    var home_component_1 = $__require("./home/home.component");
-    var login_recruiter_component_1 = $__require("./login/login-recruiter.component");
-    var login_candidate_component_1 = $__require("./login/login-candidate.component");
-    var job_edit_component_1 = $__require("./admin/job-edit.component");
-    var jobs_list_component_1 = $__require("./admin/jobs-list.component");
-    var job_create_component_1 = $__require("./admin/job-create.component");
-    var routes = [{ path: '', component: home_component_1.HomeComponent, pathMatch: 'full' }, { path: 'login/recruiter', component: login_recruiter_component_1.LoginRecruiterComponent }, { path: 'login/candidate', component: login_candidate_component_1.LoginCandidateComponent }, { path: 'admin', component: admin_component_1.AdminComponent }, { path: 'admin/job', component: jobs_list_component_1.JobsListComponent }, { path: 'admin/job/create', component: job_create_component_1.JobCreateComponent }, { path: 'admin/job/:id', component: job_edit_component_1.JobEditComponent }];
-    var AppRoutingModule = function () {
-        function AppRoutingModule() {}
-        return AppRoutingModule;
-    }();
-    AppRoutingModule = tslib_1.__decorate([core_1.NgModule({
-        imports: [router_1.RouterModule.forRoot(routes)],
-        exports: [router_1.RouterModule]
-    })], AppRoutingModule);
-    exports.AppRoutingModule = AppRoutingModule;
+    UserService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [http_1.Http, angular_2_local_storage_1.LocalStorageService])], UserService);
+    exports.UserService = UserService;
 
     
 });
@@ -42105,7 +42909,7 @@ System.registerDynamic("dist/public/app/rxjs-extensions.js", ["rxjs/add/observab
 
   
 });
-System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./rxjs-extensions"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "angular-2-local-storage", "./httpAuth", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./route.guards", "./user.service", "./rxjs-extensions"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -42116,6 +42920,8 @@ System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core
     var forms_1 = $__require("@angular/forms");
     var http_1 = $__require("@angular/http");
     var ng_bootstrap_1 = $__require("@ng-bootstrap/ng-bootstrap");
+    var angular_2_local_storage_1 = $__require("angular-2-local-storage");
+    var httpAuth_1 = $__require("./httpAuth");
     var job_service_1 = $__require("./job.service");
     var app_component_1 = $__require("./app.component");
     var admin_component_1 = $__require("./admin/admin.component");
@@ -42128,15 +42934,20 @@ System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core
     var login_recruiter_component_1 = $__require("./login/login-recruiter.component");
     var login_candidate_component_1 = $__require("./login/login-candidate.component");
     var app_routing_module_1 = $__require("./app-routing.module");
+    var route_guards_1 = $__require("./route.guards");
+    var user_service_1 = $__require("./user.service");
     $__require("./rxjs-extensions");
     var AppModule = function () {
         function AppModule() {}
         return AppModule;
     }();
     AppModule = tslib_1.__decorate([core_1.NgModule({
-        imports: [platform_browser_1.BrowserModule, forms_1.FormsModule, http_1.HttpModule, ng_bootstrap_1.NgbModule.forRoot(), app_routing_module_1.AppRoutingModule],
+        imports: [platform_browser_1.BrowserModule, forms_1.FormsModule, http_1.HttpModule, ng_bootstrap_1.NgbModule.forRoot(), app_routing_module_1.AppRoutingModule, angular_2_local_storage_1.LocalStorageModule.withConfig({
+            prefix: 'trans-app',
+            storageType: 'localStorage'
+        })],
         declarations: [app_component_1.AppComponent, admin_component_1.AdminComponent, home_component_1.HomeComponent, login_recruiter_component_1.LoginRecruiterComponent, login_candidate_component_1.LoginCandidateComponent, job_edit_component_1.JobEditComponent, jobs_list_component_1.JobsListComponent, job_create_component_1.JobCreateComponent, modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
-        providers: [job_service_1.JobService],
+        providers: [httpAuth_1.HttpAuth, job_service_1.JobService, user_service_1.UserService, route_guards_1.AdminGuard, route_guards_1.LoggedInGuard, route_guards_1.RecruiterGuard],
         entryComponents: [modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
         bootstrap: [app_component_1.AppComponent]
     })], AppModule);

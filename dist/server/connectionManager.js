@@ -92,10 +92,10 @@ function startConnectionAsync() {
             connectionOptions.server.socketOptions.socketTimeoutMS = 10000;
             connectionOptions.server.reconnectTries = 10;
         }
-        else if (config_1.Config.isTestEnv) {
+        else if (config_1.isTestEnv) {
             connectionString = 'mongodb://localhost/transempregos-test';
         }
-        else if (config_1.Config.isProdEnv) {
+        else if (config_1.isProdEnv) {
             throw new Error('Production has to have MONGO_URI set.');
         }
         else {

@@ -2,6 +2,7 @@
 var tslib_1 = require("tslib");
 var core_1 = require("@angular/core");
 var http_1 = require("@angular/http");
+var httpAuth_1 = require("./httpAuth");
 require("rxjs/add/operator/toPromise");
 var JobService = (function () {
     function JobService(http) {
@@ -124,7 +125,7 @@ var JobService = (function () {
 }());
 JobService = tslib_1.__decorate([
     core_1.Injectable(),
-    tslib_1.__metadata("design:paramtypes", [http_1.Http])
+    tslib_1.__metadata("design:paramtypes", [httpAuth_1.HttpAuth])
 ], JobService);
 exports.JobService = JobService;
 

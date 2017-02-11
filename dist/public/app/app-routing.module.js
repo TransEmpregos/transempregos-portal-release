@@ -9,14 +9,15 @@ var login_candidate_component_1 = require("./login/login-candidate.component");
 var job_edit_component_1 = require("./admin/job-edit.component");
 var jobs_list_component_1 = require("./admin/jobs-list.component");
 var job_create_component_1 = require("./admin/job-create.component");
+var route_guards_1 = require("./route.guards");
 var routes = [
     { path: '', component: home_component_1.HomeComponent, pathMatch: 'full' },
     { path: 'login/recruiter', component: login_recruiter_component_1.LoginRecruiterComponent },
     { path: 'login/candidate', component: login_candidate_component_1.LoginCandidateComponent },
-    { path: 'admin', component: admin_component_1.AdminComponent },
-    { path: 'admin/job', component: jobs_list_component_1.JobsListComponent },
-    { path: 'admin/job/create', component: job_create_component_1.JobCreateComponent },
-    { path: 'admin/job/:id', component: job_edit_component_1.JobEditComponent }
+    { path: 'admin', component: admin_component_1.AdminComponent, canActivate: [route_guards_1.RecruiterGuard] },
+    { path: 'admin/job', component: jobs_list_component_1.JobsListComponent, canActivate: [route_guards_1.RecruiterGuard] },
+    { path: 'admin/job/create', component: job_create_component_1.JobCreateComponent, canActivate: [route_guards_1.RecruiterGuard] },
+    { path: 'admin/job/:id', component: job_edit_component_1.JobEditComponent, canActivate: [route_guards_1.RecruiterGuard] }
 ];
 var AppRoutingModule = (function () {
     function AppRoutingModule() {

@@ -4,4 +4,4 @@ class Router extends KoaRouter {
 }
 exports.Router = Router;
 
-//# sourceMappingURL=_transRouter.js.map
+//# sourceMappingURL=transRouter.js.map

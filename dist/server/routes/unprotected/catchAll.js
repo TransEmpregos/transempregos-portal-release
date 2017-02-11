@@ -1,9 +1,9 @@
 "use strict";
 const tslib_1 = require("tslib");
-const _transRouter_1 = require("./_transRouter");
-const job_1 = require("../models/job");
-const upmonitor_1 = require("../upmonitor");
-const router = new _transRouter_1.Router();
+const transRouter_1 = require("../transRouter");
+const job_1 = require("../../models/job");
+const upmonitor_1 = require("../../upmonitor");
+const router = new transRouter_1.Router();
 router.get('/', (ctx) => tslib_1.__awaiter(this, void 0, void 0, function* () {
     if (upmonitor_1.upMonitor.isDown) {
         log(`Server is down because of ${upmonitor_1.upMonitor.reason}, not trying to go the database.`);

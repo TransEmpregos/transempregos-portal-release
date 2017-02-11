@@ -14,10 +14,12 @@ global.log = require('debug')('trans');
 const router_1 = require("./routes/router");
 const connectionManager_1 = require("./connectionManager");
 const config_1 = require("./config");
+const Config = require("./config");
 const staticFiles_1 = require("./staticFiles");
-connectionManager_1.startConnectionAsync();
+const user_1 = require("./models/user");
+connectionManager_1.startConnectionAsync().then(() => user_1.User.seed());
 const app = new Koa();
-if (!config_1.Config.isTestEnv)
+if (!config_1.isTestEnv)
     app.use(logger());
 app.use(convert(conditional()));
 app.use(convert(etag()));
@@ -28,11 +30,11 @@ const viewPath = path.resolve(__dirname, 'views');
 new Pug({
     app: app,
     viewPath: viewPath,
-    noCache: config_1.Config.isDevEnv,
-    pretty: config_1.Config.isDevEnv,
+    noCache: config_1.isDevEnv,
+    pretty: config_1.isDevEnv,
     locals: {
         iconsDir: '/dist/public/images/icons',
-        Config: config_1.Config
+        Config: Config
     }
 });
 app.use((ctx, next) => tslib_1.__awaiter(this, void 0, void 0, function* () {
@@ -51,8 +53,8 @@ app.use((ctx, next) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         ctx.status = error.status || 500;
     }
 }));
-app.use(router_1.default.routes())
-    .use(router_1.default.allowedMethods());
+app.use(router_1.router.routes())
+    .use(router_1.router.allowedMethods());
 app.on('error', (err, ctx) => {
     console.error('server error', err, ctx);
 });
