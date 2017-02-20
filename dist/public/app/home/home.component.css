@@ -163,6 +163,7 @@
     .description-area .description-sub-area .aside-description {
       max-width: 750px; }
       .description-area .description-sub-area .aside-description button {
+        background-color: transparent;
         border-color: #7770a4;
         color: #7770a4;
         text-transform: uppercase;
@@ -210,6 +211,11 @@
       @media screen and (max-width: 426px) {
         .depositions-area .general-board-depositions .title-depositions {
           font-size: 24pt; } }
+    .depositions-area .general-board-depositions .aspas {
+      display: block;
+      margin-bottom: 50px;
+      width: 40px;
+      height: 40px; }
     .depositions-area .general-board-depositions .text-depositions {
       text-align: left;
       margin-bottom: 50px;
@@ -266,6 +272,7 @@
       .partners-area ul li a img {
         max-height: 100px; }
   .partners-area button {
+    background-color: transparent;
     color: #7770a4;
     border-color: #7770a4;
     font-size: 16pt;

@@ -16,7 +16,7 @@
     align-items: center; }
   .navbar.navbar-fixed-top .header-logo {
     height: 40px;
-    margin: 10px; }
+    margin: 10px 0; }
     @media screen and (max-width: 320px) {
       .navbar.navbar-fixed-top .header-logo {
         height: 35px; } }
