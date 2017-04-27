@@ -1,5 +1,11 @@
 "use strict";
 var tslib_1 = require("tslib");
+var company_details_component_1 = require("./admin/company-details.component");
+var companies_list_component_1 = require("./admin/companies-list.component");
+var company_service_1 = require("./company.service");
+var company_create_component_1 = require("./admin/company-create.component");
+var company_edit_componet_1 = require("./admin/company-edit.componet");
+var job_details_component_1 = require("./admin/job-details.component");
 var core_1 = require("@angular/core");
 var platform_browser_1 = require("@angular/platform-browser");
 var forms_1 = require("@angular/forms");
@@ -49,10 +55,15 @@ AppModule = tslib_1.__decorate([
             job_edit_component_1.JobEditComponent,
             jobs_list_component_1.JobsListComponent,
             job_create_component_1.JobCreateComponent,
+            job_details_component_1.JobDetailsComponent,
+            company_edit_componet_1.CompanyEditComponent,
+            company_create_component_1.CompanyCreateComponent,
+            companies_list_component_1.CompaniesListComponent,
+            company_details_component_1.CompanyDetailsComponent,
             modal_yesno_component_1.ModalYesNoComponent,
             modal_ok_component_1.ModalOkComponent
         ],
-        providers: [httpAuth_1.HttpAuth, job_service_1.JobService, user_service_1.UserService, route_guards_1.AdminGuard, route_guards_1.LoggedInGuard, route_guards_1.RecruiterGuard],
+        providers: [httpAuth_1.HttpAuth, job_service_1.JobService, company_service_1.CompanyService, user_service_1.UserService, route_guards_1.AdminGuard, route_guards_1.LoggedInGuard, route_guards_1.RecruiterGuard],
         entryComponents: [modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
         bootstrap: [app_component_1.AppComponent]
     })

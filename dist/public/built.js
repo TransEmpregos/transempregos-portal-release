@@ -19602,20 +19602,23 @@ System.registerDynamic("dist/public/app/login/login-candidate.component.js", ["t
 
     
 });
-System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", "../company.service", "@angular/core", "@angular/router", "../job.service"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
+    var company_service_1 = $__require("../company.service");
     var core_1 = $__require("@angular/core");
     var router_1 = $__require("@angular/router");
     var job_service_1 = $__require("../job.service");
     var JobEditComponent = function () {
-        function JobEditComponent(jobService, route, router) {
+        function JobEditComponent(jobService, route, companyService, router) {
             this.jobService = jobService;
             this.route = route;
+            this.companyService = companyService;
             this.router = router;
+            this.companies = [];
         }
         JobEditComponent.prototype.ngOnInit = function () {
             var _this = this;
@@ -19623,6 +19626,22 @@ System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", 
                 return _this.jobService.getJobAsync(params['id']);
             }).subscribe(function (job) {
                 return _this.job = job;
+            });
+            this.loadCompanies();
+        };
+        JobEditComponent.prototype.loadCompanies = function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var companies;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            return [4 /*yield*/, this.companyService.getAllAsync()];
+                        case 1:
+                            companies = _a.sent();
+                            this.companies = companies;
+                            return [2 /*return*/];
+                    }
+                });
             });
         };
         JobEditComponent.prototype.save = function (form) {
@@ -19650,9 +19669,404 @@ System.registerDynamic("dist/public/app/admin/job-edit.component.js", ["tslib", 
     JobEditComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
         selector: 'trans-admin-job-edit',
-        templateUrl: 'job-edit.component.html'
-    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.ActivatedRoute, router_1.Router])], JobEditComponent);
+        templateUrl: 'job-edit.component.html',
+        styleUrls: ['form.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.ActivatedRoute, company_service_1.CompanyService, router_1.Router])], JobEditComponent);
     exports.JobEditComponent = JobEditComponent;
+
+    
+});
+System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib", "./../company.service", "@angular/core", "../job.service", "../modals/modal-yesno.component", "../modals/modal-ok.component", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var company_service_1 = $__require("./../company.service");
+    var core_1 = $__require("@angular/core");
+    var job_service_1 = $__require("../job.service");
+    var modal_yesno_component_1 = $__require("../modals/modal-yesno.component");
+    var modal_ok_component_1 = $__require("../modals/modal-ok.component");
+    var ng_bootstrap_1 = $__require("@ng-bootstrap/ng-bootstrap");
+    var JobsListComponent = function () {
+        function JobsListComponent(jobService, companyService, modalService) {
+            this.jobService = jobService;
+            this.companyService = companyService;
+            this.modalService = modalService;
+            this.jobs = [];
+            this.companies = [];
+        }
+        JobsListComponent.prototype.ngOnInit = function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var companies, i, companyJobs;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            return [4 /*yield*/, this.companyService.getAllAsync()];
+                        case 1:
+                            companies = _a.sent();
+                            i = 0;
+                            _a.label = 2;
+                        case 2:
+                            if (!(i < companies.length)) return [3 /*break*/, 5];
+                            return [4 /*yield*/, this.companyService.getAllCompanyJobsAsync(companies[i]._id)];
+                        case 3:
+                            companyJobs = _a.sent();
+                            companies[i].jobs = companyJobs;
+                            _a.label = 4;
+                        case 4:
+                            i++;
+                            return [3 /*break*/, 2];
+                        case 5:
+                            this.companies = companies;
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobsListComponent.prototype.delete = function (job) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var yesNoModal, result, error_1, okModal;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            yesNoModal = this.modalService.open(modal_yesno_component_1.ModalYesNoComponent);
+                            return [4 /*yield*/, yesNoModal.result];
+                        case 1:
+                            result = _a.sent();
+                            if (result !== 'yes') return [2 /*return*/];
+                            _a.label = 2;
+                        case 2:
+                            _a.trys.push([2, 4,, 5]);
+                            return [4 /*yield*/, this.jobService.deleteAsync(job._id)];
+                        case 3:
+                            _a.sent();
+                            this.jobs.splice(this.jobs.indexOf(job), 1);
+                            return [3 /*break*/, 5];
+                        case 4:
+                            error_1 = _a.sent();
+                            okModal = this.modalService.open(modal_ok_component_1.ModalOkComponent);
+                            okModal.componentInstance.message = 'Erro ao excluir.';
+                            return [3 /*break*/, 5];
+                        case 5:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        return JobsListComponent;
+    }();
+    JobsListComponent = tslib_1.__decorate([core_1.Component({
+        moduleId: module.id,
+        selector: 'trans-admin-jobs-list',
+        templateUrl: 'jobs-list.component.html',
+        styleUrls: ['base-test.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, company_service_1.CompanyService, ng_bootstrap_1.NgbModal])], JobsListComponent);
+    exports.JobsListComponent = JobsListComponent;
+
+    
+});
+System.registerDynamic("dist/public/app/job.js", ["./company"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var company_1 = $__require("./company");
+    var Job = function () {
+        function Job() {
+            var j = new company_1.Company();
+            this.companyId = j._id;
+        }
+        return Job;
+    }();
+    exports.Job = Job;
+
+    
+});
+System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib", "./../company.service", "@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var company_service_1 = $__require("./../company.service");
+    var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var job_service_1 = $__require("../job.service");
+    var job_1 = $__require("../job");
+    var JobCreateComponent = function () {
+        function JobCreateComponent(jobService, companyService, router) {
+            this.jobService = jobService;
+            this.companyService = companyService;
+            this.router = router;
+            this.companies = [];
+        }
+        JobCreateComponent.prototype.ngOnInit = function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var companies;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            return [4 /*yield*/, this.companyService.getAllAsync()];
+                        case 1:
+                            companies = _a.sent();
+                            this.companies = companies;
+                            this.job = new job_1.Job();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobCreateComponent.prototype.save = function (form) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (form.invalid) {
+                                return [2 /*return*/];
+                            }
+                            return [4 /*yield*/, this.jobService.createAsync(this.job)];
+                        case 1:
+                            _a.sent();
+                            this.goBack();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobCreateComponent.prototype.goBack = function () {
+            this.router.navigate(['/admin/job']);
+        };
+        return JobCreateComponent;
+    }();
+    JobCreateComponent = tslib_1.__decorate([core_1.Component({
+        moduleId: module.id,
+        selector: 'trans-admin-job-edit',
+        templateUrl: 'job-edit.component.html',
+        styleUrls: ['form.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, company_service_1.CompanyService, router_1.Router])], JobCreateComponent);
+    exports.JobCreateComponent = JobCreateComponent;
+
+    
+});
+System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/core", "@angular/http", "./httpAuth", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var http_1 = $__require("@angular/http");
+    var httpAuth_1 = $__require("./httpAuth");
+    $__require("rxjs/add/operator/toPromise");
+    var JobService = function () {
+        function JobService(http) {
+            this.http = http;
+            this.jobsUrl = 'api/jobs';
+            this.headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+        }
+        JobService.prototype.getAllAsync = function () {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var response, jobs, error_1;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 2,, 3]);
+                            return [4 /*yield*/, this.http.get(this.jobsUrl).toPromise()];
+                        case 1:
+                            response = _a.sent();
+                            jobs = response.json();
+                            return [2 /*return*/, jobs];
+                        case 2:
+                            error_1 = _a.sent();
+                            console.error("An error ocurred: " + error_1);
+                            throw error_1;
+                        case 3:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.getJobAsync = function (id) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var url, response, job, error_2;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.jobsUrl + "/" + id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.get(url).toPromise()];
+                        case 2:
+                            response = _a.sent();
+                            job = response.json();
+                            return [2 /*return*/, job];
+                        case 3:
+                            error_2 = _a.sent();
+                            console.error("An error ocurred: " + error_2);
+                            throw error_2;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.updateAsync = function (job) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var url, error_3;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.jobsUrl + "/" + job._id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.put(url, JSON.stringify(job), { headers: this.headers }).toPromise()];
+                        case 2:
+                            _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_3 = _a.sent();
+                            console.error("An error ocurred: " + error_3);
+                            throw error_3;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.createAsync = function (job) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var result, error_4;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            _a.trys.push([0, 2,, 3]);
+                            return [4 /*yield*/, this.http.post(this.jobsUrl, JSON.stringify(job), { headers: this.headers }).toPromise()];
+                        case 1:
+                            result = _a.sent();
+                            return [2 /*return*/, result.json().data];
+                        case 2:
+                            error_4 = _a.sent();
+                            console.error("An error ocurred: " + error_4);
+                            throw error_4;
+                        case 3:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        JobService.prototype.deleteAsync = function (id) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var url, error_5;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.jobsUrl + "/" + id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.delete(url, { headers: this.headers }).toPromise()];
+                        case 2:
+                            _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_5 = _a.sent();
+                            console.error("An error ocurred: " + error_5);
+                            throw error_5;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        return JobService;
+    }();
+    JobService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [httpAuth_1.HttpAuth])], JobService);
+    exports.JobService = JobService;
+
+    
+});
+System.registerDynamic("dist/public/app/admin/job-details.component.js", ["tslib", "./../company.service", "@angular/core", "@angular/router", "../job.service"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var company_service_1 = $__require("./../company.service");
+    var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var job_service_1 = $__require("../job.service");
+    var JobDetailsComponent = function () {
+        function JobDetailsComponent(jobService, companyService, route, router) {
+            this.jobService = jobService;
+            this.companyService = companyService;
+            this.route = route;
+            this.router = router;
+        }
+        JobDetailsComponent.prototype.ngOnInit = function () {
+            var _this = this;
+            this.route.params.switchMap(function (params) {
+                return _this.jobService.getJobAsync(params['id']);
+            }).subscribe(function (job) {
+                _this.job = job;
+                var empresa = _this.companyService.getCompanyAsync(job.companyId.toString());
+                empresa.then(function (data) {
+                    _this.empresa = data.companyName;
+                });
+            });
+        };
+        JobDetailsComponent.prototype.goBack = function () {
+            this.router.navigate(['/admin/job']);
+        };
+        return JobDetailsComponent;
+    }();
+    JobDetailsComponent = tslib_1.__decorate([core_1.Component({
+        moduleId: module.id,
+        selector: 'trans-admin-job-details',
+        templateUrl: 'job-details.component.html',
+        styleUrls: ['base-test.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, company_service_1.CompanyService, router_1.ActivatedRoute, router_1.Router])], JobDetailsComponent);
+    exports.JobDetailsComponent = JobDetailsComponent;
+
+    
+});
+System.registerDynamic("dist/public/app/admin/company-details.component.js", ["tslib", "@angular/core", "@angular/router", "../company.service"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var company_service_1 = $__require("../company.service");
+    var CompanyDetailsComponent = function () {
+        function CompanyDetailsComponent(companyService, route, router) {
+            this.companyService = companyService;
+            this.route = route;
+            this.router = router;
+        }
+        CompanyDetailsComponent.prototype.ngOnInit = function () {
+            var _this = this;
+            this.route.params.switchMap(function (params) {
+                return _this.companyService.getCompanyAsync(params['id']);
+            }).subscribe(function (company) {
+                return _this.company = company;
+            });
+        };
+        CompanyDetailsComponent.prototype.goBack = function () {
+            this.router.navigate(['/admin/company']);
+        };
+        return CompanyDetailsComponent;
+    }();
+    CompanyDetailsComponent = tslib_1.__decorate([core_1.Component({
+        moduleId: module.id,
+        selector: 'trans-admin-company-details',
+        templateUrl: 'company-details.component.html',
+        styleUrls: ['base-test.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [company_service_1.CompanyService, router_1.ActivatedRoute, router_1.Router])], CompanyDetailsComponent);
+    exports.CompanyDetailsComponent = CompanyDetailsComponent;
 
     
 });
@@ -28507,39 +28921,39 @@ var define = System.amdDefine;
 });
 
 })();
-System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib", "@angular/core", "../job.service", "../modals/modal-yesno.component", "../modals/modal-ok.component", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/companies-list.component.js", ["tslib", "./../company.service", "@angular/core", "../modals/modal-yesno.component", "../modals/modal-ok.component", "@ng-bootstrap/ng-bootstrap"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
+    var company_service_1 = $__require("./../company.service");
     var core_1 = $__require("@angular/core");
-    var job_service_1 = $__require("../job.service");
     var modal_yesno_component_1 = $__require("../modals/modal-yesno.component");
     var modal_ok_component_1 = $__require("../modals/modal-ok.component");
     var ng_bootstrap_1 = $__require("@ng-bootstrap/ng-bootstrap");
-    var JobsListComponent = function () {
-        function JobsListComponent(jobService, modalService) {
-            this.jobService = jobService;
+    var CompaniesListComponent = function () {
+        function CompaniesListComponent(companyService, modalService) {
+            this.companyService = companyService;
             this.modalService = modalService;
-            this.jobs = [];
+            this.companies = [];
         }
-        JobsListComponent.prototype.ngOnInit = function () {
+        CompaniesListComponent.prototype.ngOnInit = function () {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var jobs;
+                var companies;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            return [4 /*yield*/, this.jobService.getAllAsync()];
+                            return [4 /*yield*/, this.companyService.getAllAsync()];
                         case 1:
-                            jobs = _a.sent();
-                            this.jobs = jobs;
+                            companies = _a.sent();
+                            this.companies = companies;
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        JobsListComponent.prototype.delete = function (job) {
+        CompaniesListComponent.prototype.delete = function (company) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
                 var yesNoModal, result, error_1, okModal;
                 return tslib_1.__generator(this, function (_a) {
@@ -28553,10 +28967,10 @@ System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib",
                             _a.label = 2;
                         case 2:
                             _a.trys.push([2, 4,, 5]);
-                            return [4 /*yield*/, this.jobService.deleteAsync(job._id)];
+                            return [4 /*yield*/, this.companyService.deleteAsync(company._id)];
                         case 3:
                             _a.sent();
-                            this.jobs.splice(this.jobs.indexOf(job), 1);
+                            this.companies.splice(this.companies.indexOf(company), 1);
                             return [3 /*break*/, 5];
                         case 4:
                             error_1 = _a.sent();
@@ -28569,14 +28983,78 @@ System.registerDynamic("dist/public/app/admin/jobs-list.component.js", ["tslib",
                 });
             });
         };
-        return JobsListComponent;
+        return CompaniesListComponent;
     }();
-    JobsListComponent = tslib_1.__decorate([core_1.Component({
+    CompaniesListComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
-        selector: 'trans-admin-jobs-list',
-        templateUrl: 'jobs-list.component.html'
-    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, ng_bootstrap_1.NgbModal])], JobsListComponent);
-    exports.JobsListComponent = JobsListComponent;
+        selector: 'trans-admin-companies-list',
+        templateUrl: 'companies-list.component.html',
+        styleUrls: ['base-test.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [company_service_1.CompanyService, ng_bootstrap_1.NgbModal])], CompaniesListComponent);
+    exports.CompaniesListComponent = CompaniesListComponent;
+
+    
+});
+System.registerDynamic("dist/public/app/company.js", [], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var Company = function () {
+        function Company() {}
+        return Company;
+    }();
+    exports.Company = Company;
+
+    
+});
+System.registerDynamic("dist/public/app/admin/company-create.component.js", ["tslib", "@angular/core", "@angular/router", "./../company.service", "./../company"], true, function ($__require, exports, module) {
+    "use strict";
+
+    var global = this || self,
+        GLOBAL = global;
+    var tslib_1 = $__require("tslib");
+    var core_1 = $__require("@angular/core");
+    var router_1 = $__require("@angular/router");
+    var company_service_1 = $__require("./../company.service");
+    var company_1 = $__require("./../company");
+    var CompanyCreateComponent = function () {
+        function CompanyCreateComponent(companyService, router) {
+            this.companyService = companyService;
+            this.router = router;
+        }
+        CompanyCreateComponent.prototype.ngOnInit = function () {
+            this.company = new company_1.Company();
+        };
+        CompanyCreateComponent.prototype.save = function (form) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (form.invalid) {
+                                return [2 /*return*/];
+                            }
+                            return [4 /*yield*/, this.companyService.createAsync(this.company)];
+                        case 1:
+                            _a.sent();
+                            this.goBack();
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        CompanyCreateComponent.prototype.goBack = function () {
+            this.router.navigate(['/admin/company']);
+        };
+        return CompanyCreateComponent;
+    }();
+    CompanyCreateComponent = tslib_1.__decorate([core_1.Component({
+        moduleId: module.id,
+        selector: 'trans-admin-company-edit',
+        templateUrl: 'company-edit.component.html',
+        styleUrls: ['form.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [company_service_1.CompanyService, router_1.Router])], CompanyCreateComponent);
+    exports.CompanyCreateComponent = CompanyCreateComponent;
 
     
 });
@@ -33910,7 +34388,7 @@ System.registerDynamic("dist/public/app/httpAuth.js", ["tslib", "@angular/core",
 
     
 });
-System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/core", "@angular/http", "./httpAuth", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/company.service.js", ["tslib", "@angular/core", "@angular/http", "./httpAuth", "rxjs/add/operator/toPromise"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -33920,24 +34398,24 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
     var http_1 = $__require("@angular/http");
     var httpAuth_1 = $__require("./httpAuth");
     $__require("rxjs/add/operator/toPromise");
-    var JobService = function () {
-        function JobService(http) {
+    var CompanyService = function () {
+        function CompanyService(http) {
             this.http = http;
-            this.jobsUrl = 'api/jobs';
+            this.companiesUrl = 'api/companies';
             this.headers = new http_1.Headers({ 'Content-Type': 'application/json' });
         }
-        JobService.prototype.getAllAsync = function () {
+        CompanyService.prototype.getAllAsync = function () {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var response, jobs, error_1;
+                var response, companies, error_1;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2,, 3]);
-                            return [4 /*yield*/, this.http.get(this.jobsUrl).toPromise()];
+                            return [4 /*yield*/, this.http.get(this.companiesUrl).toPromise()];
                         case 1:
                             response = _a.sent();
-                            jobs = response.json();
-                            return [2 /*return*/, jobs];
+                            companies = response.json();
+                            return [2 /*return*/, companies];
                         case 2:
                             error_1 = _a.sent();
                             console.error("An error ocurred: " + error_1);
@@ -33948,21 +34426,21 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
                 });
             });
         };
-        JobService.prototype.getJobAsync = function (id) {
+        CompanyService.prototype.getCompanyAsync = function (id) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var url, response, job, error_2;
+                var url, response, company, error_2;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            url = this.jobsUrl + "/" + id;
+                            url = this.companiesUrl + "/" + id;
                             _a.label = 1;
                         case 1:
                             _a.trys.push([1, 3,, 4]);
                             return [4 /*yield*/, this.http.get(url).toPromise()];
                         case 2:
                             response = _a.sent();
-                            job = response.json();
-                            return [2 /*return*/, job];
+                            company = response.json();
+                            return [2 /*return*/, company];
                         case 3:
                             error_2 = _a.sent();
                             console.error("An error ocurred: " + error_2);
@@ -33973,20 +34451,21 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
                 });
             });
         };
-        JobService.prototype.updateAsync = function (job) {
+        CompanyService.prototype.getAllCompanyJobsAsync = function (id) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var url, error_3;
+                var url, response, companyJobs, error_3;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            url = this.jobsUrl + "/" + job._id;
+                            url = this.companiesUrl + "/" + id + "/jobs";
                             _a.label = 1;
                         case 1:
                             _a.trys.push([1, 3,, 4]);
-                            return [4 /*yield*/, this.http.put(url, JSON.stringify(job), { headers: this.headers }).toPromise()];
+                            return [4 /*yield*/, this.http.get(url).toPromise()];
                         case 2:
-                            _a.sent();
-                            return [3 /*break*/, 4];
+                            response = _a.sent();
+                            companyJobs = response.json();
+                            return [2 /*return*/, companyJobs];
                         case 3:
                             error_3 = _a.sent();
                             console.error("An error ocurred: " + error_3);
@@ -33997,34 +34476,58 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
                 });
             });
         };
-        JobService.prototype.createAsync = function (job) {
+        CompanyService.prototype.updateAsync = function (company) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var result, error_4;
+                var url, error_4;
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            url = this.companiesUrl + "/" + company._id;
+                            _a.label = 1;
+                        case 1:
+                            _a.trys.push([1, 3,, 4]);
+                            return [4 /*yield*/, this.http.put(url, JSON.stringify(company), { headers: this.headers }).toPromise()];
+                        case 2:
+                            _a.sent();
+                            return [3 /*break*/, 4];
+                        case 3:
+                            error_4 = _a.sent();
+                            console.error("An error ocurred: " + error_4);
+                            throw error_4;
+                        case 4:
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        };
+        CompanyService.prototype.createAsync = function (company) {
+            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                var result, error_5;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2,, 3]);
-                            return [4 /*yield*/, this.http.post(this.jobsUrl, JSON.stringify(job), { headers: this.headers }).toPromise()];
+                            return [4 /*yield*/, this.http.post(this.companiesUrl, JSON.stringify(company), { headers: this.headers }).toPromise()];
                         case 1:
                             result = _a.sent();
                             return [2 /*return*/, result.json().data];
                         case 2:
-                            error_4 = _a.sent();
-                            console.error("An error ocurred: " + error_4);
-                            throw error_4;
+                            error_5 = _a.sent();
+                            console.error("An error ocurred: " + error_5);
+                            throw error_5;
                         case 3:
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        JobService.prototype.deleteAsync = function (id) {
+        CompanyService.prototype.deleteAsync = function (id) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
-                var url, error_5;
+                var url, error_6;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            url = this.jobsUrl + "/" + id;
+                            url = this.companiesUrl + "/" + id;
                             _a.label = 1;
                         case 1:
                             _a.trys.push([1, 3,, 4]);
@@ -34033,53 +34536,23 @@ System.registerDynamic("dist/public/app/job.service.js", ["tslib", "@angular/cor
                             _a.sent();
                             return [3 /*break*/, 4];
                         case 3:
-                            error_5 = _a.sent();
-                            console.error("An error ocurred: " + error_5);
-                            throw error_5;
+                            error_6 = _a.sent();
+                            console.error("An error ocurred: " + error_6);
+                            throw error_6;
                         case 4:
                             return [2 /*return*/];
                     }
                 });
             });
         };
-        return JobService;
+        return CompanyService;
     }();
-    JobService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [httpAuth_1.HttpAuth])], JobService);
-    exports.JobService = JobService;
+    CompanyService = tslib_1.__decorate([core_1.Injectable(), tslib_1.__metadata("design:paramtypes", [httpAuth_1.HttpAuth])], CompanyService);
+    exports.CompanyService = CompanyService;
 
     
 });
-System.registerDynamic("dist/public/app/contact.js", [], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    var Contact = function () {
-        function Contact() {}
-        return Contact;
-    }();
-    exports.Contact = Contact;
-
-    
-});
-System.registerDynamic("dist/public/app/job.js", ["./contact"], true, function ($__require, exports, module) {
-    "use strict";
-
-    var global = this || self,
-        GLOBAL = global;
-    var contact_1 = $__require("./contact");
-    var Job = function () {
-        function Job() {
-            this.contact = new contact_1.Contact();
-        }
-        ;
-        return Job;
-    }();
-    exports.Job = Job;
-
-    
-});
-System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib", "@angular/core", "@angular/router", "../job.service", "../job"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/admin/company-edit.componet.js", ["tslib", "@angular/core", "@angular/router", "../company.service"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -34087,17 +34560,22 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib"
     var tslib_1 = $__require("tslib");
     var core_1 = $__require("@angular/core");
     var router_1 = $__require("@angular/router");
-    var job_service_1 = $__require("../job.service");
-    var job_1 = $__require("../job");
-    var JobCreateComponent = function () {
-        function JobCreateComponent(jobService, router) {
-            this.jobService = jobService;
+    var company_service_1 = $__require("../company.service");
+    var CompanyEditComponent = function () {
+        function CompanyEditComponent(companyService, route, router) {
+            this.companyService = companyService;
+            this.route = route;
             this.router = router;
         }
-        JobCreateComponent.prototype.ngOnInit = function () {
-            this.job = new job_1.Job();
+        CompanyEditComponent.prototype.ngOnInit = function () {
+            var _this = this;
+            this.route.params.switchMap(function (params) {
+                return _this.companyService.getCompanyAsync(params['id']);
+            }).subscribe(function (company) {
+                return _this.company = company;
+            });
         };
-        JobCreateComponent.prototype.save = function (form) {
+        CompanyEditComponent.prototype.save = function (form) {
             return tslib_1.__awaiter(this, void 0, void 0, function () {
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
@@ -34105,7 +34583,7 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib"
                             if (form.invalid) {
                                 return [2 /*return*/];
                             }
-                            return [4 /*yield*/, this.jobService.createAsync(this.job)];
+                            return [4 /*yield*/, this.companyService.updateAsync(this.company)];
                         case 1:
                             _a.sent();
                             this.goBack();
@@ -34114,21 +34592,22 @@ System.registerDynamic("dist/public/app/admin/job-create.component.js", ["tslib"
                 });
             });
         };
-        JobCreateComponent.prototype.goBack = function () {
-            this.router.navigate(['/admin/job']);
+        CompanyEditComponent.prototype.goBack = function () {
+            this.router.navigate(['/admin/company']);
         };
-        return JobCreateComponent;
+        return CompanyEditComponent;
     }();
-    JobCreateComponent = tslib_1.__decorate([core_1.Component({
+    CompanyEditComponent = tslib_1.__decorate([core_1.Component({
         moduleId: module.id,
-        selector: 'trans-admin-job-edit',
-        templateUrl: 'job-edit.component.html'
-    }), tslib_1.__metadata("design:paramtypes", [job_service_1.JobService, router_1.Router])], JobCreateComponent);
-    exports.JobCreateComponent = JobCreateComponent;
+        selector: 'trans-admin-company-edit',
+        templateUrl: 'company-edit.component.html',
+        styleUrls: ['form.component.css']
+    }), tslib_1.__metadata("design:paramtypes", [company_service_1.CompanyService, router_1.ActivatedRoute, router_1.Router])], CompanyEditComponent);
+    exports.CompanyEditComponent = CompanyEditComponent;
 
     
 });
-System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./route.guards"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angular/core", "@angular/router", "./admin/admin.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./admin/job-details.component", "./admin/company-details.component", "./admin/companies-list.component", "./admin/company-create.component", "./admin/company-edit.componet", "./route.guards"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
@@ -34143,8 +34622,13 @@ System.registerDynamic("dist/public/app/app-routing.module.js", ["tslib", "@angu
     var job_edit_component_1 = $__require("./admin/job-edit.component");
     var jobs_list_component_1 = $__require("./admin/jobs-list.component");
     var job_create_component_1 = $__require("./admin/job-create.component");
+    var job_details_component_1 = $__require("./admin/job-details.component");
+    var company_details_component_1 = $__require("./admin/company-details.component");
+    var companies_list_component_1 = $__require("./admin/companies-list.component");
+    var company_create_component_1 = $__require("./admin/company-create.component");
+    var company_edit_componet_1 = $__require("./admin/company-edit.componet");
     var route_guards_1 = $__require("./route.guards");
-    var routes = [{ path: '', component: home_component_1.HomeComponent, pathMatch: 'full' }, { path: 'login/recruiter', component: login_recruiter_component_1.LoginRecruiterComponent }, { path: 'login/candidate', component: login_candidate_component_1.LoginCandidateComponent }, { path: 'admin', component: admin_component_1.AdminComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job', component: jobs_list_component_1.JobsListComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/create', component: job_create_component_1.JobCreateComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/:id', component: job_edit_component_1.JobEditComponent, canActivate: [route_guards_1.RecruiterGuard] }];
+    var routes = [{ path: '', component: home_component_1.HomeComponent, pathMatch: 'full' }, { path: 'login/recruiter', component: login_recruiter_component_1.LoginRecruiterComponent }, { path: 'login/candidate', component: login_candidate_component_1.LoginCandidateComponent }, { path: 'admin', component: admin_component_1.AdminComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job', component: jobs_list_component_1.JobsListComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/create', component: job_create_component_1.JobCreateComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/:id', component: job_edit_component_1.JobEditComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/job/details/:id', component: job_details_component_1.JobDetailsComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/company', component: companies_list_component_1.CompaniesListComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/company/create', component: company_create_component_1.CompanyCreateComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/company/:id', component: company_edit_componet_1.CompanyEditComponent, canActivate: [route_guards_1.RecruiterGuard] }, { path: 'admin/company/details/:id', component: company_details_component_1.CompanyDetailsComponent, canActivate: [route_guards_1.RecruiterGuard] }];
     var AppRoutingModule = function () {
         function AppRoutingModule() {}
         return AppRoutingModule;
@@ -42909,12 +43393,18 @@ System.registerDynamic("dist/public/app/rxjs-extensions.js", ["rxjs/add/observab
 
   
 });
-System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "angular-2-local-storage", "./httpAuth", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./route.guards", "./user.service", "./rxjs-extensions"], true, function ($__require, exports, module) {
+System.registerDynamic("dist/public/app/app.module.js", ["tslib", "./admin/company-details.component", "./admin/companies-list.component", "./company.service", "./admin/company-create.component", "./admin/company-edit.componet", "./admin/job-details.component", "@angular/core", "@angular/platform-browser", "@angular/forms", "@angular/http", "@ng-bootstrap/ng-bootstrap", "angular-2-local-storage", "./httpAuth", "./job.service", "./app.component", "./admin/admin.component", "./admin/job-edit.component", "./admin/jobs-list.component", "./admin/job-create.component", "./modals/modal-yesno.component", "./modals/modal-ok.component", "./home/home.component", "./login/login-recruiter.component", "./login/login-candidate.component", "./app-routing.module", "./route.guards", "./user.service", "./rxjs-extensions"], true, function ($__require, exports, module) {
     "use strict";
 
     var global = this || self,
         GLOBAL = global;
     var tslib_1 = $__require("tslib");
+    var company_details_component_1 = $__require("./admin/company-details.component");
+    var companies_list_component_1 = $__require("./admin/companies-list.component");
+    var company_service_1 = $__require("./company.service");
+    var company_create_component_1 = $__require("./admin/company-create.component");
+    var company_edit_componet_1 = $__require("./admin/company-edit.componet");
+    var job_details_component_1 = $__require("./admin/job-details.component");
     var core_1 = $__require("@angular/core");
     var platform_browser_1 = $__require("@angular/platform-browser");
     var forms_1 = $__require("@angular/forms");
@@ -42946,8 +43436,8 @@ System.registerDynamic("dist/public/app/app.module.js", ["tslib", "@angular/core
             prefix: 'trans-app',
             storageType: 'localStorage'
         })],
-        declarations: [app_component_1.AppComponent, admin_component_1.AdminComponent, home_component_1.HomeComponent, login_recruiter_component_1.LoginRecruiterComponent, login_candidate_component_1.LoginCandidateComponent, job_edit_component_1.JobEditComponent, jobs_list_component_1.JobsListComponent, job_create_component_1.JobCreateComponent, modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
-        providers: [httpAuth_1.HttpAuth, job_service_1.JobService, user_service_1.UserService, route_guards_1.AdminGuard, route_guards_1.LoggedInGuard, route_guards_1.RecruiterGuard],
+        declarations: [app_component_1.AppComponent, admin_component_1.AdminComponent, home_component_1.HomeComponent, login_recruiter_component_1.LoginRecruiterComponent, login_candidate_component_1.LoginCandidateComponent, job_edit_component_1.JobEditComponent, jobs_list_component_1.JobsListComponent, job_create_component_1.JobCreateComponent, job_details_component_1.JobDetailsComponent, company_edit_componet_1.CompanyEditComponent, company_create_component_1.CompanyCreateComponent, companies_list_component_1.CompaniesListComponent, company_details_component_1.CompanyDetailsComponent, modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
+        providers: [httpAuth_1.HttpAuth, job_service_1.JobService, company_service_1.CompanyService, user_service_1.UserService, route_guards_1.AdminGuard, route_guards_1.LoggedInGuard, route_guards_1.RecruiterGuard],
         entryComponents: [modal_yesno_component_1.ModalYesNoComponent, modal_ok_component_1.ModalOkComponent],
         bootstrap: [app_component_1.AppComponent]
     })], AppModule);

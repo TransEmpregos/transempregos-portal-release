@@ -1,10 +1,10 @@
 "use strict";
-var contact_1 = require("./contact");
+var company_1 = require("./company");
 var Job = (function () {
     function Job() {
-        this.contact = new contact_1.Contact();
+        var j = new company_1.Company();
+        this.companyId = j._id;
     }
-    ;
     return Job;
 }());
 exports.Job = Job;
